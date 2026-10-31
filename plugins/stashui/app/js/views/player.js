@@ -1119,7 +1119,7 @@ export async function render(host, params, query = {}) {
       const tag = await markerTag();
       const d = await gql(`mutation($i: SceneMarkerCreateInput!) { sceneMarkerCreate(input: $i) { id title seconds primary_tag { id name } } }`, { i: { scene_id: x.id, seconds: at, primary_tag_id: tag, title: "" } });
       x.scene_markers = [...(x.scene_markers || []), d.sceneMarkerCreate];
-      generatePreviews("marker", [d.sceneMarkerCreate.id], { quiet: true });
+      generatePreviews("marker", [d.sceneMarkerCreate.id], { quiet: true, sceneIds: [x.id] });
       paintMarkers();
       toast(t("Marker at {time}", { time: fmtDuration(at) }), "ok");
     } catch (e) {

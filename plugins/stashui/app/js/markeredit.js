@@ -218,7 +218,7 @@ export function openMarkerEdit({ scene, marker, video, defaultTag, done }) {
       } catch (err) {
         console.warn("last used tags", err); // a nicety – never a reason to fail after the marker is saved
       }
-      generatePreviews("marker", [m.id], { overwrite: !isNew, quiet: true }); // (its hover preview and picture, in the background)
+      generatePreviews("marker", [m.id], { overwrite: !isNew, quiet: true, sceneIds: [scene.id] }); // (its hover preview and picture, in the background)
       d.close();
       toast(t("Saved"), "ok");
       done(m, isNew);

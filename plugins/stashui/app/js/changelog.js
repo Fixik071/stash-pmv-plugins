@@ -7,6 +7,17 @@
 
 export const CHANGES = [
   {
+    v: "3.136.1",
+    date: "2026-10-31",
+    items: [
+      [
+        "ui",
+        "Fixed: the video preview and picture of a marker you add in the player (or save in the part window) often didn't appear. Stash 0.31 can't save them when they are asked for by the marker alone and its scene has no markers folder yet (its log says “moving … failed: the system cannot find the path specified”). They are now asked for through the marker's scene, which makes the folder itself and only makes what is missing. Editing a marker still renews just that marker.",
+        "修复：在播放器里添加的标记（或在“片段”窗口保存的标记）经常没有生成视频预览和图片。Stash 0.31 在只按标记本身请求、而其场景还没有标记文件夹时无法保存它们（日志里是“moving … failed: the system cannot find the path specified”）。现在改为通过标记所在的场景来请求，Stash 会自己建好文件夹，并且只生成缺少的部分。编辑标记时仍然只重新生成那一个标记。",
+      ],
+    ],
+  },
+  {
     v: "3.136.0",
     date: "2026-10-31",
     items: [

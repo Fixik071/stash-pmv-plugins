@@ -550,7 +550,7 @@ export function mediaBrowser(host, opts) {
           return;
         }
         case "genprev":
-          await generatePreviews(kind, ids);
+          await generatePreviews(kind, ids, { sceneIds: kind === "marker" ? pieces.map((p) => p.raw && p.raw.scene && p.raw.scene.id).filter(Boolean) : null });
           return exitSelect();
         case "queue": {
           const q = store.get("queue", []);

@@ -15,14 +15,19 @@ const WHAT = {
 const NAMES = { scene: ["scene", "scenes"], image: ["image", "images"], marker: ["marker", "markers"] };
 
 // ids: ids of the kind (none for a marker task = the markers of the whole library); overwrite: make them again
-export async function generatePreviews(kind, ids, { overwrite = false, quiet = false } = {}) {
+// sceneIds (markers): the scenes of these markers. Stash 0.31 can't save the previews of a marker that is asked for by its own id
+// when its scene has no markers folder yet ("moving … to …/markers/<hash>/10.mp4 failed: the system cannot find the path") – a task for
+// the scene makes the folder itself and makes whatever is missing there, so new markers go that way.
+export async function generatePreviews(kind, ids, { overwrite = false, quiet = false, sceneIds = null } = {}) {
   const w = WHAT[kind];
+  const byScene = kind === "marker" && ids && ids.length && sceneIds && sceneIds.length && !overwrite;
   try {
     const fields = ((await typeInfo("GenerateMetadataInput").catch(() => null)) || {}).inputFields || [];
     const known = { has: (k) => !fields.length || fields.some((f) => f.name === k) }; // (no schema answer: try them all)
     const input = { overwrite };
     w.on.filter((k) => known.has(k)).forEach((k) => (input[k] = true));
-    if (ids && ids.length) {
+    if (byScene && known.has("sceneIDs")) input.sceneIDs = [...new Set(sceneIds.map(String))];
+    else if (ids && ids.length) {
       if (!known.has(w.ids)) throw new Error(t("This Stash can't generate previews for single items"));
       input[w.ids] = ids;
     }

@@ -110,7 +110,7 @@ async function onClick(e) {
       }
       case "genprev": {
         const groups = byKind(sel);
-        for (const k of Object.keys(groups)) if (k !== "gallery") await generatePreviews(k, groups[k]);
+        for (const k of Object.keys(groups)) if (k !== "gallery") await generatePreviews(k, groups[k], { sceneIds: k === "marker" ? sel.filter(({ p }) => p.kind === "marker").map(({ p }) => p.raw && p.raw.scene && p.raw.scene.id).filter(Boolean) : null });
         return clearAll();
       }
       case "queue": {
