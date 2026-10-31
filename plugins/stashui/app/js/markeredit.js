@@ -75,10 +75,10 @@ export function openMarkerEdit({ scene, marker, video, defaultTag, done }) {
       <div class="kb-tagpick" data-more></div>`,
     foot: `${marker ? `<button class="kb-btn is-ghost kb-qdel" data-del>${icon("close")}${t("Delete")}</button>` : ""}<span class="kb-spacer"></span><button class="kb-btn is-primary" data-save>${t("Save")}</button>`,
     onClose: () => stopRepeat(),
+    dock: !!video,
   });
   const el = d.el;
   const $ = (s) => el.querySelector(s);
-  if (video && el.previousElementSibling) el.previousElementSibling.style.display = "none"; // the video stays usable
   el.classList.add("kb-cut");
 
   // ---------- Start and end ----------

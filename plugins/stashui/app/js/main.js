@@ -1,6 +1,6 @@
 // Stash UI – app frame: router, navigation rail, overlays.
 
-import { esc, icon, store, errorToast, fmtNum, $, folderMode, setRatingSystem } from "./ui.js";
+import { esc, icon, store, errorToast, fmtNum, $, folderMode, setRatingSystem, closeWindows } from "./ui.js";
 import { t, initLang } from "./i18n.js";
 import { loadExtensions, setHost, extensionsReady, routeInfo, hasNav } from "./ext.js";
 import { gql, loadFolders, favoriteTagId, stats, abortRoute } from "./api.js";
@@ -177,6 +177,7 @@ async function route() {
     if (seq !== routeSeq) return;
     r = parseHash();
   }
+  closeWindows(); // drawers and dialogs of the page / scene you leave go with it
   window.dispatchEvent(new CustomEvent("stash:route", { detail: { path: r.path, view: r.view, params: r.params, query: r.query } }));
   const main = document.getElementById("main");
   const overlayRoot = document.getElementById("overlay-root");

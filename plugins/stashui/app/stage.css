@@ -805,3 +805,9 @@ html.kb-glass .kb-pmvg-lsrow select { background: rgba(255, 255, 255, .08); bord
 html.kb-glass .kb-pmvg-moments { border-color: var(--glass-edge); background: var(--glass-shine), var(--glass-deep, var(--glass)); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); }
 /* the mini player keeps the picture settings of the player */
 html.kb-has-pfx .kb-mini-screen :is(video, canvas) { filter: var(--pfx-page); }
+/* A drawer that works on the video you are watching (marker, GIF, cut clips) is docked: the player's edge moves left of it and the info
+   panel is tucked away, so the timeline stays visible and usable all the way to the end of the video */
+@media (min-width: 820px) {
+  html.kb-docked .kb-stage.kb-player { right: var(--dock-w, 460px); grid-template-columns: minmax(0, 1fr) 0; }
+  html.kb-docked .kb-stage.kb-player .kb-side { visibility: hidden; }
+}

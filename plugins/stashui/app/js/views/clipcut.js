@@ -28,6 +28,7 @@ export function openClipCut(x, video) {
   const cropKey = "cropRect." + x.id;
 
   const d = openDrawer({
+    dock: true,
     title: t("Cut clips"),
     body: `
       <p class="kb-hint">${t("Play or scrub the video, press “Here” at the start and the end of a part, then “Add clip”. Save all clips as new videos – the original stays untouched.")}</p>
@@ -66,7 +67,6 @@ export function openClipCut(x, video) {
   });
   const el = d.el;
   const $ = (s) => el.querySelector(s);
-  if (el.previousElementSibling) el.previousElementSibling.style.display = "none"; // (the scrim) the video stays usable
   el.classList.add("kb-cut");
   applyClipsDir($("[data-sub]"));
 

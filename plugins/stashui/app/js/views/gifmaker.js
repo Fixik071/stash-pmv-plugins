@@ -30,6 +30,7 @@ export function openGifMaker(x, video) {
   if (!o.fromMode) o.fromMode = short ? "start" : "now"; // where the length buttons start: the beginning of the video or the current time
 
   const d = openDrawer({
+    dock: true,
     title: t("Make a GIF"),
     body: `
       <p class="kb-hint">${t("Play or scrub the video, press “Here” at the start and the end of the part you want – or a length from the current time – and make the GIF. The video itself stays as it is.")}</p>
@@ -83,7 +84,6 @@ export function openGifMaker(x, video) {
   });
   const el = d.el;
   const $ = (s) => el.querySelector(s);
-  if (el.previousElementSibling) el.previousElementSibling.style.display = "none"; // (the scrim) the video stays usable
   el.classList.add("kb-cut", "kb-gif");
   applyClipsDir($("[data-sub]"));
 

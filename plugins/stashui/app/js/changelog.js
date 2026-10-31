@@ -7,6 +7,14 @@
 
 export const CHANGES = [
   {
+    v: "3.134.1",
+    date: "2026-10-31",
+    items: [
+      ["ui", "Fix: windows like “Make a GIF”, “Cut clips” or the edit window stayed open when you left the scene or went back to the menu. Drawers and dialogs now close when the page or scene changes.", "修复：离开场景或返回菜单后，“制作 GIF”“剪切片段”或编辑窗口仍保持打开。现在页面或场景切换时，抽屉和对话框会自动关闭。"],
+      ["ui", "Fix: the windows that work on the video you are watching (parts / markers, GIF, cut clips) covered the end of the timeline, so a spot near the end of the video was hard to find. The player now moves to the left of the window and the info panel steps aside while it is open (on screens at least 820 px wide).", "修复：处理当前所看视频的窗口（片段/标记、GIF、剪切片段）会遮住时间轴末端，导致很难找到接近视频结尾的位置。现在窗口打开时，播放器会移到窗口左侧，信息面板暂时收起（屏幕宽度至少 820 px 时）。"],
+    ],
+  },
+  {
     v: "3.134.0",
     date: "2026-10-31",
     items: [

@@ -350,7 +350,9 @@ export function promptDialog({ title, label, value = "", ok = t("OK") }) {
 
 // Drawer from the right. render(body) fills the content; returns close().
 // light: the page behind isn't dimmed or blurred (the E / T keys on a card – you keep looking at what you tag)
-export function openDrawer({ title, body, foot, onClose, light }) {
+// dock: the page behind stays usable – no dimming, and a player moves out of the way (its edge is moved left of the drawer, the info
+// panel is tucked away), so the timeline isn't hidden under the drawer (used by the windows that work on the video you are watching)
+export function openDrawer({ title, body, foot, onClose, light, dock }) {
   const wrap = document.createElement("div");
   wrap.innerHTML = `
     <div class="kb-scrim${light ? " is-clear" : ""}"></div>
@@ -360,9 +362,17 @@ export function openDrawer({ title, body, foot, onClose, light }) {
       ${foot ? `<div class="kb-drawer-foot">${foot}</div>` : ""}
     </aside>`;
   mountOverlay(wrap);
+  const drawer = wrap.querySelector(".kb-drawer");
+  if (dock) {
+    wrap.querySelector(".kb-scrim").style.display = "none";
+    drawer.classList.add("is-docked");
+    document.documentElement.classList.add("kb-docked");
+    document.documentElement.style.setProperty("--dock-w", Math.round(drawer.getBoundingClientRect().width) + "px");
+  }
   const close = () => {
     wrap.remove();
     document.removeEventListener("keydown", onKey, true);
+    if (dock && !document.querySelector(".kb-drawer.is-docked")) document.documentElement.classList.remove("kb-docked");
     onClose && onClose();
   };
   const onKey = (e) => {
@@ -375,6 +385,15 @@ export function openDrawer({ title, body, foot, onClose, light }) {
   wrap.querySelector(".kb-scrim").onclick = close;
   wrap.querySelector("[data-close]").onclick = close;
   return { el: wrap.querySelector(".kb-drawer"), close };
+}
+
+// Leaving the page / the scene: windows that belong to it (drawers, dialogs) go with it – every one of them closes by a click on its scrim
+export function closeWindows() {
+  for (let pass = 0; pass < 6; pass++) {
+    const scrims = [...new Set([document.getElementById("overlay-root"), document.fullscreenElement].filter(Boolean))].flatMap((r) => [...r.querySelectorAll(".kb-scrim")]);
+    if (!scrims.length) return;
+    scrims.forEach((s) => s.click());
+  }
 }
 
 // Little particles flying out of an element (O counter drops, favorite hearts). kind: "drop" | "heart"
