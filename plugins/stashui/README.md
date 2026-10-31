@@ -108,7 +108,7 @@ export default {
 
 ## Works with the other plugins
 
-Other people's plugins show up in the menu under **Extensions**, each pointing to the best place it has: its own web page (e.g. Stash TV), a page it adds to classic Stash (e.g. Stash Downloader – opened embedded), its card on the Plugins page with tasks and settings (plugins that only have those), or classic Stash for plugins that only add a button there. Libraries, font loaders and themes get no entry.
+Other people's plugins show up in the menu under **Extensions**, each pointing to the best place it has: its own web page (e.g. Stash TV), a page it adds to classic Stash (e.g. Stash Downloader – opened embedded), its card on the Plugins page with tasks and settings (plugins that only have those), the classic Stats page for plugins that fill it (e.g. Insights – embedded), or classic Stash for plugins that only add a button there. Libraries, font loaders and themes get no entry.
 
 
 Stash UI works on its own. If you also install **Media Storm** or the **PMV Generator** (same plugin source), they show up in the menu under **Watch** – entries of plugins that aren't installed or are turned off are hidden. The PMV Generator opens as its own page; its back link and saved scenes lead back into Stash UI.

@@ -7,6 +7,13 @@
 
 export const CHANGES = [
   {
+    v: "3.132.2",
+    date: "2026-10-31",
+    items: [
+      ["ui", "Plugins that fill classic Stash's own Stats page (like Insights) get an entry in the menu under Extensions now – it opens that page embedded, so the plugin works from Stash UI. Only tested with a mock.", "填充经典 Stash 自带统计页的插件（例如 Insights）现在会在菜单“扩展”下出现入口，并在内嵌的该页面中打开，因此可以在 Stash UI 中使用。仅在模拟环境中测试过。"],
+    ],
+  },
+  {
     v: "3.132.1",
     date: "2026-10-31",
     items: [

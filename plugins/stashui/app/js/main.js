@@ -394,7 +394,7 @@ async function refreshPluginLinks() {
 // 4. only additions to classic Stash with a menu button there (e.g. an overlay) – classic Stash, where it runs
 // What was found is kept per plugin version.
 const OWN = new Set(["stashui", "mediastorm", "pmvgenerator"]);
-const EXT_KEY = "extPlugins6"; // v4: every plugin, routes also via variables; v6: plugin icon
+const EXT_KEY = "extPlugins7"; // v4: every plugin, routes also via variables; v6: plugin icon; v7: Stats-page plugins
 
 // A real page – not a folder listing: Stash's file server answers ".../index.html" of a folder without
 // that file by listing the folder (a bare <pre> with links, no head, body or scripts)
@@ -442,6 +442,8 @@ async function findPages(p) {
     try {
       const src = await (await fetch(js)).text();
       if (/MainNavBar|navbar-nav|nav-link|navbar-buttons/.test(src)) navButton = true;
+      // A plugin that fills classic Stash's own Stats page (e.g. Insights): that page, embedded
+      if (/location\.pathname/.test(src) && /\^\\\/stats\\\/\?\$|pathname\s*===?\s*["'`]\/stats\/?["'`]/.test(src) && !pages.some((x) => x.route === "/stats")) pages.push({ kind: "route", route: "/stats" });
       // register.route("/plugin/x", …) – or with the path in a variable: then the "/plugin/x" strings
       // of a script that registers routes at all
       const re = /register\.route\(\s*["'`](\/[^"'`\s]+)["'`]/g;
@@ -478,7 +480,7 @@ async function paintExtensions(list) {
   Object.keys(cache).forEach((k) => keep.has(k) || delete cache[k]);
   store.set(EXT_KEY, cache);
   try {
-    ["stashui.extPlugins", "stashui.extPlugins2", "stashui.extPlugins3", "stashui.extPlugins4"].forEach((k) => localStorage.removeItem(k)); // older results
+    ["stashui.extPlugins", "stashui.extPlugins2", "stashui.extPlugins3", "stashui.extPlugins4", "stashui.extPlugins6"].forEach((k) => localStorage.removeItem(k)); // older results
   } catch (e) { /* blocked */ }
   const href = (f) =>
     f.kind === "page" ? f.url
