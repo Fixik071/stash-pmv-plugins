@@ -4,7 +4,7 @@
 
 import { esc, icon, store, toast, errorToast, debounce, fmtDuration, confirmDialog } from "../ui.js";
 import { t } from "../i18n.js";
-import { gql } from "../api.js";
+import { gql, pathNameFilter } from "../api.js";
 import { runBackend } from "../interactive.js";
 import { parseTime } from "../audiox.js";
 import { intoStash } from "./clipcut.js";
@@ -307,7 +307,7 @@ export async function render(main) {
       bar.style.width = "100%";
       await intoStash({ performers: [], tags: [] }, st.files, { meta: false });
       const name = st.files[0].split(/[\\/]/).pop();
-      const s = await gql(`query($f: SceneFilterType) { findScenes(scene_filter: $f, filter: { per_page: 5 }) { scenes { id files { path } } } }`, { f: { path: { value: name, modifier: "INCLUDES" } } });
+      const s = await gql(`query($f: SceneFilterType) { findScenes(scene_filter: $f, filter: { per_page: 5 }) { scenes { id files { path } } } }`, { f: { path: pathNameFilter(name) } });
       const sc = s.findScenes.scenes.find((v) => v.files.some((fl) => fl.path.split(/[\\/]/).pop() === name));
       txt.innerHTML = sc ? `${t("Done.")} <a href="#/scene/${esc(sc.id)}">${t("Open the new video")}</a>` : esc(t("Done – Stash will show it after its next scan."));
     } catch (e) {

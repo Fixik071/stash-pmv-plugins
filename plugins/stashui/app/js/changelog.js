@@ -7,6 +7,13 @@
 
 export const CHANGES = [
   {
+    v: "3.134.2",
+    date: "2026-10-31",
+    items: [
+      ["ui", "Fix: Cut clips, the Editor and the GIF maker look up the new file in Stash by its exact name now. Stash’s search matched any single word of the name (“Clip 2 – Kiss.mp4” found every file with “Clip” or “2” in it), so the new video was often missed – then it got no performers, tags or studio, or the “Open the new video” link was missing.", "修复：“剪切片段”“编辑器”和 GIF 制作现在按完整文件名在 Stash 中查找新文件。Stash 的搜索会匹配名称中的任意单个词（“Clip 2 – Kiss.mp4”会找到所有含“Clip”或“2”的文件），因此新视频常常找不到——结果是没有演员、标签或工作室，或缺少“打开新视频”链接。"],
+    ],
+  },
+  {
     v: "3.134.1",
     date: "2026-10-31",
     items: [

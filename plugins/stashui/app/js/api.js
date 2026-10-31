@@ -539,3 +539,7 @@ async function writePluginConfig(id, patch) {
   cfgSeen.set(id, Object.keys(next).length > 0);
   return next;
 }
+
+// A path filter for ONE file name. Stash's INCLUDES matches ANY word of the value ("Clip 2 - Kiss.mp4" finds every path that
+// has "Clip", "2", "-" or "Kiss" in it), so the file just made was often not among the first hits. A regex on the end of the path finds it.
+export const pathNameFilter = (name) => ({ value: "(?i)(^|[\\\\/])" + String(name).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "$", modifier: "MATCHES_REGEX" });

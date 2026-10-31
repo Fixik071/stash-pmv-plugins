@@ -4,7 +4,7 @@
 
 import { esc, icon, toast, errorToast, openDrawer, store, fmtDuration } from "../ui.js";
 import { t } from "../i18n.js";
-import { gql } from "../api.js";
+import { gql, pathNameFilter } from "../api.js";
 import { runBackend } from "../interactive.js";
 import { parseTime } from "../audiox.js";
 import { createCropper } from "../cropbox.js";
@@ -257,7 +257,7 @@ export async function intoStash(x, files, o, extra) {
     const base = f.split(/[\\/]/).pop();
     let sc = null;
     for (let i = 0; i < 30 && !sc; i++) {
-      const s = await gql(`query($f: SceneFilterType) { findScenes(scene_filter: $f, filter: { per_page: 10 }) { scenes { id files { path } } } }`, { f: { path: { value: base, modifier: "INCLUDES" } } });
+      const s = await gql(`query($f: SceneFilterType) { findScenes(scene_filter: $f, filter: { per_page: 10 }) { scenes { id files { path } } } }`, { f: { path: pathNameFilter(base) } });
       sc = s.findScenes.scenes.find((v) => v.files.some((fl) => norm(fl.path.split(/[\\/]/).pop()) === norm(base)));
       if (!sc) await new Promise((r) => setTimeout(r, 2000));
     }

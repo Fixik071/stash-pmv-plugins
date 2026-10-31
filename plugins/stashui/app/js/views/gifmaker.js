@@ -4,7 +4,7 @@
 
 import { esc, icon, toast, errorToast, openDrawer, store, fmtBytes } from "../ui.js";
 import { t } from "../i18n.js";
-import { gql } from "../api.js";
+import { gql, pathNameFilter } from "../api.js";
 import { runBackend } from "../interactive.js";
 import { parseTime } from "../audiox.js";
 import { createCropper } from "../cropbox.js";
@@ -198,7 +198,7 @@ export function openGifMaker(x, video) {
     // the scan can still be working when its job is gone – look for the new image for up to half a minute
     let img = null;
     for (let i = 0; i < 15 && !img; i++) {
-      const r = await gql(`query($f: ImageFilterType) { findImages(image_filter: $f, filter: { per_page: 10 }) { images { id visual_files { ... on ImageFile { path } ... on VideoFile { path } } } } }`, { f: { path: { value: name, modifier: "INCLUDES" } } }).catch(() => null);
+      const r = await gql(`query($f: ImageFilterType) { findImages(image_filter: $f, filter: { per_page: 10 }) { images { id visual_files { ... on ImageFile { path } ... on VideoFile { path } } } } }`, { f: { path: pathNameFilter(name) } }).catch(() => null);
       img = r && r.findImages.images.find((v) => (v.visual_files || []).some((f) => String(f.path || "").normalize("NFC").toLowerCase().endsWith(name.normalize("NFC").toLowerCase())));
       if (!img) await new Promise((r2) => setTimeout(r2, 2000));
     }
