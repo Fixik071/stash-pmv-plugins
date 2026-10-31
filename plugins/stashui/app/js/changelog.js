@@ -7,6 +7,18 @@
 
 export const CHANGES = [
   {
+    v: "3.136.0",
+    date: "2026-10-31",
+    items: [
+      [
+        "ui",
+        "New in a scene's info panel: “Crop / edit”. Shorten the video (new start and end) and/or crop its picture, and the video file is replaced by the result – the original can stay next to it as “.orig”. While it is open, the player's own timeline at the bottom is replaced by the editing timeline: drag the ends, drag the highlighted part, press in the pictures to look at a spot, and the mouse wheel zooms in and out for coarser or finer work (Shift + wheel moves along it). Stash then rescans the file.",
+        "场景信息面板新增“裁剪 / 编辑”：缩短视频（新的开始和结束）和/或裁剪画面，视频文件会被结果替换——原文件可以以“.orig”保留在旁边。打开时，播放器底部原来的时间轴会换成编辑时间轴：拖动两端、拖动高亮部分、点按画面查看该位置，鼠标滚轮可放大或缩小，粗调或细调都可以（Shift + 滚轮可左右移动）。之后 Stash 会重新扫描该文件。",
+        "scene/@scene::[data-vedit]",
+      ],
+    ],
+  },
+  {
     v: "3.135.1",
     date: "2026-10-31",
     items: [

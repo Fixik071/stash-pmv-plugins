@@ -93,7 +93,7 @@ function frameStrip(src, duration) {
 
 // ---------------------------------------------------------------------------------------------------------------------------------
 // o: { video, duration, fps, start, end (null = no end), optionalEnd, minLen, sprite: { vtt, url } | null, src (video address for the
-//      fallback pictures), height, onChange({ start, end }, final) }
+//      fallback pictures), height, wheelZoom (the plain mouse wheel zooms), onChange({ start, end }, final) }
 export function createTrim(host, o = {}) {
   const video = o.video || null;
   let dur = Number(o.duration) || 0;
@@ -125,7 +125,7 @@ export function createTrim(host, o = {}) {
       </span>
     </div>
     <div class="kb-tb-scroll" data-scroll>
-      <div class="kb-tb-track" data-track title="${t("Drag the ends to trim, drag the part to move it, press in the pictures to look at that spot. Ctrl + wheel zooms.")}">
+      <div class="kb-tb-track" data-track title="${o.wheelZoom ? t("Drag the ends to trim, drag the part to move it, press in the pictures to look at that spot. The mouse wheel zooms.") : t("Drag the ends to trim, drag the part to move it, press in the pictures to look at that spot. Ctrl + wheel zooms.")}">
         <div class="kb-tb-ruler" data-ruler></div>
         <div class="kb-tb-strip" data-strip></div>
         <div class="kb-tb-shade is-l" data-shl></div>
@@ -342,17 +342,27 @@ export function createTrim(host, o = {}) {
         else setZoom(k === "in" ? zoom * 1.8 : zoom / 1.8);
       }),
   );
+  // Ctrl + wheel zooms (with `wheelZoom` the plain wheel does, and Shift + wheel / sideways scrolling moves along the zoomed bar)
   scroll.addEventListener(
     "wheel",
     (e) => {
       if (!dur) return;
-      if (e.ctrlKey || e.metaKey) {
+      const zoomKey = e.ctrlKey || e.metaKey;
+      const sideways = e.shiftKey || Math.abs(e.deltaX) > Math.abs(e.deltaY);
+      if (zoomKey || (o.wheelZoom && !sideways)) {
         e.preventDefault();
+        e.stopPropagation(); // (the player's own wheel – volume / seeking – isn't meant for the bar)
+        if (!e.deltaY) return;
         const r = track.getBoundingClientRect();
-        setZoom(zoom * (e.deltaY < 0 ? 1.25 : 1 / 1.25), (e.clientX - r.left) / r.width, e.clientX - scroll.getBoundingClientRect().left);
-      } else if (zoom > 1.001 && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        // a trackpad sends many small steps, a wheel a few big ones: the zoom follows how far it turned (about 25 % a notch)
+        const f = Math.pow(1.25, Math.min(3, Math.abs(e.deltaY) / (e.deltaMode ? 1 : 100)));
+        setZoom(zoom * (e.deltaY < 0 ? f : 1 / f), (e.clientX - r.left) / r.width, e.clientX - scroll.getBoundingClientRect().left);
+      } else if (zoom > 1.001) {
         e.preventDefault();
-        scroll.scrollLeft += e.deltaY;
+        e.stopPropagation();
+        scroll.scrollLeft += sideways && Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      } else if (o.wheelZoom) {
+        e.stopPropagation();
       }
     },
     { passive: false },

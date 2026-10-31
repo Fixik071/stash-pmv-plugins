@@ -68,6 +68,10 @@ Called through Stash's `runPluginOperation` (interface: raw):
                "target_mb": keep it under this size – width / fps / quality are then the most it may use and the best that fits is picked}
       output: {"job"}
 
+* mode "video_edit" / "video_edit_swap" / "video_edit_drop": crop / shorten the video itself and replace the file (the original can be kept as
+  "<name>.orig"); ffmpeg runs in its own process, "clip_status" says how far it is.
+      args:   {"mode": "video_edit", "scene_id", "start", "end", "crop": {x,y,w,h}, "precise", "keep"}  →  {"job"}
+              {"mode": "video_edit_swap", "job"}  →  {"path", "backup"}
 * mode "edit_render": the Editor – pieces of several scenes, one after the other (trimmed, faster / slower, fading), as one new
   video, rendered by ffmpeg in its own process; "clip_status" says how far it is.
       args:   {"mode": "edit_render", "items": [{"scene_id", "start", "end", "speed"}], "name", "w", "h", "fps", "fade", "audio": "keep"|"mute",
@@ -1558,6 +1562,192 @@ def edit_job(spec_path):
     save()
 
 
+# ---------- Crop / edit the video itself: a new start, end and/or picture area, replacing the file ----------
+# {"mode": "video_edit", "scene_id", "start", "end", "crop": {x,y,w,h}, "precise": bool, "keep": bool} → {"job"}: ffmpeg writes the result next to
+#   the original under a temporary name (own process); "clip_status" says how far it is ({"state": "running"|"ready"|"error", "pct", "error"}).
+# {"mode": "video_edit_swap", "job"} → {"path", "backup"}: puts the finished file where the original is. With "keep" the original becomes
+#   "<name>.orig" (Stash doesn't scan that), otherwise it is gone. {"mode": "video_edit_drop", "job"} throws a finished result away.
+# The paths never come from the page: they are in the job's spec file.
+
+VEDIT_FORMATS = {".mp4": "mp4", ".m4v": "mp4", ".mov": "mov", ".mkv": "matroska", ".webm": "webm", ".avi": "avi"}
+VEDIT_ENCODE = {".mp4", ".m4v", ".mov", ".mkv"}  # (containers that take H.264 + AAC)
+
+
+def vedit_spec_path(job):
+    if not str(job).isalnum():
+        raise ValueError("bad job")
+    return os.path.join(CUT_DIR, f"stashui-vedit-{job}.json")
+
+
+def video_edit(stash, args):
+    sid = str(args.get("scene_id") or "")
+    if not sid.isdigit():
+        raise ValueError("no scene")
+    sc = stash.gql("query($id: ID!) { findScene(id: $id) { files { path duration } } }", {"id": sid})["findScene"]
+    if not sc or not sc.get("files"):
+        raise ValueError("the scene has no file")
+    video, dur = sc["files"][0]["path"], float(sc["files"][0].get("duration") or 0)
+    if not os.path.isfile(video):
+        raise ValueError(f"the video file can't be reached from here: {video}")
+    roots, _ = libraries(stash)
+    if not inside(video, roots):
+        raise ValueError("this video isn't in a library folder of Stash")
+    ext = os.path.splitext(video)[1].lower()
+    if ext not in VEDIT_FORMATS:
+        raise ValueError(f"{ext or 'this kind of'} files can't be changed in place – use Cut clips to make a new video")
+    a, b = float(args.get("start") or 0), float(args.get("end") or 0)
+    if dur and b > dur:
+        b = dur
+    if not (a >= 0 and b > a + 0.2):
+        raise ValueError("the end must be after the start")
+    crop = None
+    cr = args.get("crop")
+    if cr:
+        x0, y0, w0, h0 = (max(0.0, min(1.0, float(cr.get(k)))) for k in ("x", "y", "w", "h"))
+        if w0 < 0.02 or h0 < 0.02 or x0 + w0 > 1.0005 or y0 + h0 > 1.0005:
+            raise ValueError("the cropped area doesn't fit into the picture")
+        if w0 < 0.995 or h0 < 0.995:
+            crop = {"x": x0, "y": y0, "w": min(w0, 1 - x0), "h": min(h0, 1 - y0)}
+    if not crop and a < 0.05 and (not dur or dur - b < 0.05):
+        raise ValueError("nothing to change – the whole video is kept")
+    precise = bool(args.get("precise")) or bool(crop)
+    if precise and ext not in VEDIT_ENCODE:
+        raise ValueError(f"{ext} files can only be shortened without re-encoding (Fast), and not cropped")
+    job = secrets.token_hex(4)
+    spec = {"job": job, "ffmpeg": find_ffmpeg(stash), "video": video, "tmp": f"{video}.stashui-{job}.tmp", "start": a, "end": b, "crop": crop,
+            "precise": precise, "keep": bool(args.get("keep")), "fmt": VEDIT_FORMATS[ext]}
+    with open(vedit_spec_path(job), "w", encoding="utf-8") as f:
+        json.dump(spec, f)
+    flags = (0x08000000 | 0x00000200) if os.name == "nt" else 0
+    subprocess.Popen([sys.executable, os.path.abspath(__file__), "--vedit", vedit_spec_path(job)], stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, creationflags=flags)
+    return {"job": job}
+
+
+def vedit_job(spec_path):
+    with open(spec_path, encoding="utf-8") as f:
+        spec = json.load(f)
+    st = {"state": "running", "pct": 0, "files": [], "error": ""}
+    sp = cut_status_path(spec["job"])
+
+    def save():
+        with open(sp + ".tmp", "w", encoding="utf-8") as f:
+            json.dump(st, f)
+        os.replace(sp + ".tmp", sp)
+
+    save()
+    flags = 0x08000000 if os.name == "nt" else 0
+    total = spec["end"] - spec["start"]
+    try:
+        cmd = [spec["ffmpeg"], "-hide_banner", "-loglevel", "error", "-y", "-progress", "pipe:1", "-nostats", "-ss", f"{spec['start']:.3f}", "-i", spec["video"],
+               "-t", f"{total:.3f}", "-map", "0:v:0", "-map", "0:a?", "-map_metadata", "0"]
+        vf = crop_filter(spec.get("crop"), {"join": False}, False)
+        if vf:
+            cmd += ["-vf", vf]
+        if spec["precise"]:
+            cmd += ["-c:v", "libx264", "-preset", "veryfast", "-crf", "18", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k"]
+        else:
+            cmd += ["-c", "copy", "-avoid_negative_ts", "make_zero"]
+        if spec["fmt"] in ("mp4", "mov"):
+            cmd += ["-movflags", "+faststart"]
+        cmd += ["-f", spec["fmt"], spec["tmp"]]
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, creationflags=flags)
+        last = 0.0
+        for line in proc.stdout:
+            line = line.strip()
+            if line.startswith("out_time_us=") or line.startswith("out_time_ms="):
+                try:
+                    t_out = int(line.split("=", 1)[1]) / 1e6
+                except ValueError:
+                    continue
+                if time.time() - last > 0.7:
+                    st["pct"] = max(0, min(99, int(100 * t_out / total))) if total > 0 else 0
+                    save()
+                    last = time.time()
+        err = proc.stderr.read()
+        proc.wait()
+        if proc.returncode != 0 or not os.path.isfile(spec["tmp"]) or os.path.getsize(spec["tmp"]) < 1024:
+            raise RuntimeError((err or "ffmpeg failed").strip().splitlines()[-1] if (err or "").strip() else "ffmpeg failed")
+        st["pct"] = 100
+        st["state"] = "ready"
+    except Exception as e:  # noqa: BLE001
+        st["state"] = "error"
+        st["error"] = str(e)
+        try:
+            os.remove(spec["tmp"])
+        except OSError:
+            pass
+    save()
+
+
+def vedit_load(job, need_ready=False):
+    try:
+        with open(vedit_spec_path(job), encoding="utf-8") as f:
+            spec = json.load(f)
+    except (OSError, ValueError):
+        raise ValueError("this edit is not known any more")
+    if need_ready:
+        try:
+            with open(cut_status_path(job), encoding="utf-8") as f:
+                ok = json.load(f).get("state") == "ready"
+        except (OSError, ValueError):
+            ok = False
+        if not ok:
+            raise ValueError("the new video isn't finished")
+    return spec
+
+
+def vedit_forget(job):
+    for p in (vedit_spec_path(job), cut_status_path(job)):
+        try:
+            os.remove(p)
+        except OSError:
+            pass
+
+
+def video_edit_swap(stash, args):
+    job = str(args.get("job") or "")
+    spec = vedit_load(job, True)
+    video, tmp = spec["video"], spec["tmp"]
+    if not os.path.isfile(tmp):
+        raise ValueError("the new video is gone")
+    if not os.path.isfile(video):
+        raise ValueError("the original video is gone")
+    backup = unique(video + ".orig") if spec.get("keep") else ""
+    # (Stash or the browser may still hold the file for a moment: try again for half a minute)
+    err = None
+    for _ in range(40):
+        try:
+            if backup:
+                os.replace(video, backup)
+                try:
+                    os.replace(tmp, video)
+                except OSError:
+                    os.replace(backup, video)
+                    raise
+            else:
+                os.replace(tmp, video)
+            err = None
+            break
+        except OSError as e:
+            err = e
+            time.sleep(0.75)
+    if err:
+        raise RuntimeError(f"the video is in use and can't be replaced right now ({err.strerror or err})")
+    vedit_forget(job)
+    return {"path": video, "backup": backup}
+
+
+def video_edit_drop(stash, args):
+    job = str(args.get("job") or "")
+    try:
+        spec = vedit_load(job)
+        os.remove(spec["tmp"])
+    except (ValueError, OSError):
+        pass
+    vedit_forget(job)
+    return {"ok": True}
+
+
 # ---------- Match two videos by their sound (O video ↔ the video playing in its background) ----------
 # {"mode": "sync_audio", "scene_a": main video, "scene_b": O video} → {"offset", "score", "sure"}
 #   offset: the O video's own start lies this many seconds into the main video (negative: the O video started earlier and the
@@ -2062,6 +2252,8 @@ def main():
         return edit_job(sys.argv[2])
     if len(sys.argv) > 2 and sys.argv[1] == "--gifjob":
         return gif_job(sys.argv[2])
+    if len(sys.argv) > 2 and sys.argv[1] == "--vedit":
+        return vedit_job(sys.argv[2])
     data = json.loads(sys.stdin.read() or "{}")
     args = data.get("args") or {}
     mode = str(args.get("mode") or "")
@@ -2108,6 +2300,12 @@ def main():
             out = gif_make(Stash(data.get("server_connection")), args)
         elif mode == "edit_render":
             out = edit_render(Stash(data.get("server_connection")), args)
+        elif mode == "video_edit":
+            out = video_edit(Stash(data.get("server_connection")), args)
+        elif mode == "video_edit_swap":
+            out = video_edit_swap(Stash(data.get("server_connection")), args)
+        elif mode == "video_edit_drop":
+            out = video_edit_drop(None, args)
         elif mode == "box_gql":
             out = box_gql(Stash(data.get("server_connection")), args)
         elif mode == "box_rest":

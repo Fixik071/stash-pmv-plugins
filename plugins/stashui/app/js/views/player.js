@@ -1359,6 +1359,7 @@ export async function render(host, params, query = {}) {
     music: () => import("./music.js").then((m) => m.openMusic(x, v)),
     cut: () => import("./clipcut.js").then((m) => m.openClipCut(x, v)),
     gif: () => import("./gifmaker.js").then((m) => m.openGifMaker(x, v)),
+    vedit: () => import("./videoedit.js").then((m) => m.openVideoEdit(x, v)),
     wlink: () => import("./watchlink.js").then((m) => m.openWatchLink(x)),
     onO: () => oPrefs().mark !== false && markO(true),
     cover: () => frameAsCover(),

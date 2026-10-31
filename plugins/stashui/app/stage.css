@@ -29,6 +29,12 @@
 /* while the Handy menu is open, the bar stays */
 .kb-stage.is-idle:has(.kb-handy-panel:not([hidden])) .kb-controls { opacity: 1; pointer-events: auto; }
 .kb-stage.is-idle:has(.kb-handy-panel:not([hidden])) { cursor: auto; }
+/* Crop / edit (views/videoedit.js): the editing timeline takes the place of the player's own one, and the bar stays while it is open */
+.kb-stage.is-editing .kb-timeline { display: none; }
+.kb-stage.is-editing, .kb-stage.is-editing.is-idle { cursor: auto; }
+.kb-stage.is-editing .kb-controls, .kb-stage.is-editing.is-idle .kb-controls, .kb-stage.is-editing.is-idle.is-gone .kb-controls { opacity: 1; pointer-events: auto; }
+.kb-ve-bar { margin-bottom: 8px; }
+.kb-ve-bar .kb-tb-tools { color: var(--text-2); }
 
 .kb-topbar {
   position: absolute;
