@@ -2627,4 +2627,11 @@ export default {
   "Hue": "Sắc độ",
   "Reset the picture": "Đặt lại hình ảnh",
   "Double-click a slider to put it back to normal": "Nhấp đúp vào thanh trượt để về bình thường",
+  "Search or create a gallery": "Tìm hoặc tạo thư viện ảnh",
+  "A folder or zip gallery – images can't be moved in or out of it here": "Thư viện thư mục hoặc zip – không thể thêm/bớt ảnh ở đây",
+  "New gallery “{name}”": "Thư viện mới “{name}”",
+  "No matching gallery": "Không có thư viện phù hợp",
+  "Add to galleries": "Thêm vào thư viện",
+  "Remove from galleries": "Xóa khỏi thư viện",
+  "Search gallery": "Tìm thư viện",
 };

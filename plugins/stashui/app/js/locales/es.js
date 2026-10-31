@@ -2610,4 +2610,11 @@ export default {
   "Hue": "Tono",
   "Reset the picture": "Restablecer la imagen",
   "Double-click a slider to put it back to normal": "Haz doble clic en un control deslizante para volver a lo normal",
+  "Search or create a gallery": "Buscar o crear una galería",
+  "A folder or zip gallery – images can't be moved in or out of it here": "Galería de carpeta o zip: aquí no se pueden añadir ni quitar imágenes",
+  "New gallery “{name}”": "Nueva galería «{name}»",
+  "No matching gallery": "Ninguna galería coincide",
+  "Add to galleries": "Añadir a galerías",
+  "Remove from galleries": "Quitar de galerías",
+  "Search gallery": "Buscar galería",
 };

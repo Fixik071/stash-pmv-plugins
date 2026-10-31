@@ -7,6 +7,13 @@
 
 export const CHANGES = [
   {
+    v: "3.133.1",
+    date: "2026-10-31",
+    items: [
+      ["ui", "New: put scenes and images into galleries. The edit form has a Galleries field (search, or type a name to make a new gallery), and editing several at once has “Add to galleries” and “Remove from galleries”. Images only go into galleries made by hand – the folder or zip gallery they are in stays. Only tested against a mock Stash.", "新：可将场景和图片放入图库。编辑表单新增“图库”字段（可搜索，或输入名称新建图库），同时编辑多项时可使用“添加到图库”和“从图库中移除”。图片只能放入手动创建的图库——其所在的文件夹或压缩包图库保持不变。仅在模拟 Stash 上测试过。", "scene/@scene::[data-edit]"],
+    ],
+  },
+  {
     v: "3.133.0",
     date: "2026-10-31",
     items: [

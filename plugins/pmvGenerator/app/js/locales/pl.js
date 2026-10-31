@@ -2632,4 +2632,11 @@ export default {
   "Hue": "Odcień",
   "Reset the picture": "Zresetuj obraz",
   "Double-click a slider to put it back to normal": "Kliknij dwukrotnie suwak, aby przywrócić normalną wartość",
+  "Search or create a gallery": "Szukaj lub utwórz galerię",
+  "A folder or zip gallery – images can't be moved in or out of it here": "Galeria folderu lub zip – nie można tu dodawać ani usuwać obrazów",
+  "New gallery “{name}”": "Nowa galeria „{name}”",
+  "No matching gallery": "Brak pasującej galerii",
+  "Add to galleries": "Dodaj do galerii",
+  "Remove from galleries": "Usuń z galerii",
+  "Search gallery": "Szukaj galerii",
 };

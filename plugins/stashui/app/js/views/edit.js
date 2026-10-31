@@ -6,6 +6,7 @@ import { gql, getScene, getImage, getGallery, updateItem, bulkUpdate, destroyIte
 import { tagPicker } from "./tagpicker.js";
 import { perfPicker, knowPerformers } from "./perfpicker.js";
 import { studioPicker } from "./studiopicker.js";
+import { galleryPicker, galleryName, isHandMade } from "./gallerypicker.js";
 import { createStudio } from "./studioedit.js";
 import { mountSceneScrape } from "./scenescrape.js";
 import { app } from "../main.js";
@@ -82,6 +83,7 @@ async function editOne(kind, id, { onSaved, onDeleted, quick }) {
       <div class="kb-form-row"><span>${t("Tags")}</span><div class="kb-tagpick" data-tags></div></div>
       <div class="kb-form-row"><span>${t("Performers")}</span><div class="kb-tagpick" data-perfs></div></div>
       <div class="kb-form-row"><span>${t("Studio")}</span><div class="kb-tagpick" data-studio></div></div>
+      ${kind !== "gallery" ? `<div class="kb-form-row"><span>${t("Galleries")}</span><div class="kb-tagpick" data-galleries></div></div>` : ""}
       <div class="kb-form-row"><span>${t("Date")}</span><span class="kb-datefield"><input class="kb-field" type="text" inputmode="numeric" data-e="date" value="${esc(x.date || "")}" placeholder="${t("YYYY-MM-DD")}" autocomplete="off" title="${t("Year first: 2019, 2019-05 or 2019-05-17 – a year alone is saved as January 1st")}"><button type="button" class="kb-btn is-icon" data-datepick title="${t("Calendar")}" aria-label="${t("Calendar")}">${icon("slides")}</button><input type="date" class="kb-date-native" data-datenative tabindex="-1" aria-hidden="true"></span></div>
       <label class="kb-form-row"><span>${t("Description")}</span><textarea class="kb-field" data-e="details" rows="4">${esc(x.details || "")}</textarea></label>
       <label class="kb-form-row"><span>${t("Links (one per line)")}</span><textarea class="kb-field" data-e="urls" rows="2">${esc((x.urls || []).join("\n"))}</textarea></label>
@@ -99,6 +101,15 @@ async function editOne(kind, id, { onSaved, onDeleted, quick }) {
   knowPerformers(x.performers);
   const perfs = perfPicker(el.querySelector("[data-perfs]"), { include: (x.performers || []).map((p) => p.id), modes: false, allowCreate: true, placeholder: t("Search or create a performer") });
   const studio = studioPicker(el.querySelector("[data-studio]"), { include: x.studio ? [x.studio.id] : [], names: x.studio ? { [x.studio.id]: x.studio.name } : {}, create: createStudio, placeholder: t("Search or create a studio") });
+  // Galleries: a scene can be in any gallery; images only in galleries made by hand (the folder / zip gallery they are in stays, locked)
+  const gHost = el.querySelector("[data-galleries]");
+  const galleries = gHost && galleryPicker(gHost, {
+    include: (x.galleries || []).map((g) => g.id),
+    names: Object.fromEntries((x.galleries || []).map((g) => [g.id, galleryName(g)])),
+    locked: kind === "image" ? (x.galleries || []).filter((g) => !isHandMade(g)).map((g) => g.id) : [],
+    userOnly: kind === "image",
+    create: true,
+  });
   el.querySelector("[data-cancel]").onclick = d.close;
   if (kind === "scene")
     mountSceneScrape(el.querySelector("[data-scrape]"), {
@@ -149,6 +160,7 @@ async function editOne(kind, id, { onSaved, onDeleted, quick }) {
       performer_ids: perfs.include,
       studio_id: studio.include[0] || null,
     };
+    if (galleries) input.gallery_ids = galleries.include;
     try {
       el.querySelector("[data-save]").disabled = true;
       if (cover) input.cover_image = cover;
@@ -209,6 +221,8 @@ function editMany(kind, pieces, { onSaved, quick }) {
       <div class="kb-form-row"><span>${t("Add performers")}</span><div class="kb-tagpick" data-padd></div></div>
       <div class="kb-form-row"><span>${t("Remove performers")}</span><div class="kb-tagpick" data-prm></div></div>
       <div class="kb-form-row"><span>${t("Set studio")}</span><div class="kb-tagpick" data-studio></div></div>
+      ${kind !== "gallery" ? `<div class="kb-form-row"><span>${t("Add to galleries")}</span><div class="kb-tagpick" data-gadd></div></div>
+      <div class="kb-form-row"><span>${t("Remove from galleries")}</span><div class="kb-tagpick" data-grm></div></div>` : ""}
       <div class="kb-form-row"><span>${t("Set rating")}</span><div data-stars></div></div>
       <label class="kb-form-row"><span>${t("Organized")}</span><select class="kb-field" data-org><option value="">${t("don't change")}</option><option value="1">${t("organized")}</option><option value="0">${t("not organized")}</option></select></label>`,
     foot: `<span class="kb-spacer"></span><button class="kb-btn" data-cancel>${t("Cancel")}</button><button class="kb-btn is-primary" data-save>${t("Apply to all")}</button>`,
@@ -220,6 +234,9 @@ function editMany(kind, pieces, { onSaved, quick }) {
   const addPerf = perfPicker(el.querySelector("[data-padd]"), { modes: false, allowCreate: true, placeholder: t("Search or create a performer") });
   const rmPerf = perfPicker(el.querySelector("[data-prm]"), { modes: false, placeholder: t("Search performer") });
   const setStudio = studioPicker(el.querySelector("[data-studio]"), { create: createStudio, placeholder: t("Search or create a studio") });
+  const gOpts = { userOnly: kind === "image" };
+  const addGal = kind !== "gallery" && galleryPicker(el.querySelector("[data-gadd]"), Object.assign({ create: true }, gOpts));
+  const rmGal = kind !== "gallery" && galleryPicker(el.querySelector("[data-grm]"), Object.assign({ placeholder: t("Search gallery") }, gOpts));
   starInput(el.querySelector("[data-stars]"), 0, (v) => (state.rating100 = v));
   el.querySelector("[data-cancel]").onclick = d.close;
   el.querySelector("[data-save]").onclick = async () => {
@@ -235,6 +252,8 @@ function editMany(kind, pieces, { onSaved, quick }) {
       if (addPerf.include.length) jobs.push({ ids, performer_ids: { ids: addPerf.include, mode: "ADD" } });
       if (rmPerf.include.length) jobs.push({ ids, performer_ids: { ids: rmPerf.include, mode: "REMOVE" } });
       if (setStudio.include.length) jobs.push({ ids, studio_id: setStudio.include[0] });
+      if (addGal && addGal.include.length) jobs.push({ ids, gallery_ids: { ids: addGal.include, mode: "ADD" } });
+      if (rmGal && rmGal.include.length) jobs.push({ ids, gallery_ids: { ids: rmGal.include, mode: "REMOVE" } });
       if (!addP.include.length && Object.keys(base).length > 1) jobs.push(base); // rating/organized ride along with added tags, otherwise on their own
       for (const j of jobs) await bulkUpdate(kind, j);
       toast(jobs.length ? t("{what} updated", { what: plural(ids.length, "item", "items") }) : t("Nothing changed"), "ok");

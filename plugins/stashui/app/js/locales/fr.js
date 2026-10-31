@@ -2574,4 +2574,11 @@ export default {
   "Hue": "Teinte",
   "Reset the picture": "Réinitialiser l'image",
   "Double-click a slider to put it back to normal": "Double-cliquez sur un curseur pour le remettre à la normale",
+  "Search or create a gallery": "Chercher ou créer une galerie",
+  "A folder or zip gallery – images can't be moved in or out of it here": "Galerie de dossier ou zip – on n'y ajoute ni n'en retire d'images ici",
+  "New gallery “{name}”": "Nouvelle galerie « {name} »",
+  "No matching gallery": "Aucune galerie correspondante",
+  "Add to galleries": "Ajouter aux galeries",
+  "Remove from galleries": "Retirer des galeries",
+  "Search gallery": "Chercher une galerie",
 };

@@ -2588,4 +2588,11 @@ export default {
   "Hue": "Farbton",
   "Reset the picture": "Bild zurücksetzen",
   "Double-click a slider to put it back to normal": "Doppelklick auf einen Regler setzt ihn zurück",
+  "Search or create a gallery": "Galerie suchen oder anlegen",
+  "A folder or zip gallery – images can't be moved in or out of it here": "Ordner- oder Zip-Galerie – hier lassen sich keine Bilder hinein- oder herausnehmen",
+  "New gallery “{name}”": "Neue Galerie „{name}“",
+  "No matching gallery": "Keine passende Galerie",
+  "Add to galleries": "Zu Galerien hinzufügen",
+  "Remove from galleries": "Aus Galerien entfernen",
+  "Search gallery": "Galerie suchen",
 };

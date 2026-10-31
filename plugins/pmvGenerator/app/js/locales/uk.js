@@ -2667,4 +2667,11 @@ export default {
   "Hue": "Відтінок",
   "Reset the picture": "Скинути зображення",
   "Double-click a slider to put it back to normal": "Подвійний клік по повзунку повертає звичайне значення",
+  "Search or create a gallery": "Знайти або створити галерею",
+  "A folder or zip gallery – images can't be moved in or out of it here": "Галерея з папки або zip – тут не можна додавати чи прибирати зображення",
+  "New gallery “{name}”": "Нова галерея «{name}»",
+  "No matching gallery": "Немає відповідної галереї",
+  "Add to galleries": "Додати до галерей",
+  "Remove from galleries": "Прибрати з галерей",
+  "Search gallery": "Знайти галерею",
 };

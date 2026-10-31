@@ -2634,4 +2634,11 @@ export default {
   "Hue": "色相",
   "Reset the picture": "映像をリセット",
   "Double-click a slider to put it back to normal": "スライダーをダブルクリックで元に戻す",
+  "Search or create a gallery": "ギャラリーを検索または新規作成",
+  "A folder or zip gallery – images can't be moved in or out of it here": "フォルダまたはZIPのギャラリー – ここでは画像を出し入れできません",
+  "New gallery “{name}”": "新しいギャラリー「{name}」",
+  "No matching gallery": "一致するギャラリーがありません",
+  "Add to galleries": "ギャラリーに追加",
+  "Remove from galleries": "ギャラリーから外す",
+  "Search gallery": "ギャラリーを検索",
 };

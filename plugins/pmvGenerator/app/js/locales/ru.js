@@ -2669,4 +2669,11 @@ export default {
   "Hue": "Оттенок",
   "Reset the picture": "Сбросить изображение",
   "Double-click a slider to put it back to normal": "Двойной щелчок по ползунку возвращает обычное значение",
+  "Search or create a gallery": "Найти или создать галерею",
+  "A folder or zip gallery – images can't be moved in or out of it here": "Галерея из папки или zip – здесь нельзя добавлять или убирать изображения",
+  "New gallery “{name}”": "Новая галерея «{name}»",
+  "No matching gallery": "Нет подходящей галереи",
+  "Add to galleries": "Добавить в галереи",
+  "Remove from galleries": "Убрать из галерей",
+  "Search gallery": "Найти галерею",
 };

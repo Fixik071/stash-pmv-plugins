@@ -2691,4 +2691,11 @@ export default {
   "Hue": "色相",
   "Reset the picture": "重置画面",
   "Double-click a slider to put it back to normal": "双击滑块可恢复默认",
+  "Search or create a gallery": "搜索或新建图库",
+  "A folder or zip gallery – images can't be moved in or out of it here": "文件夹或压缩包图库——图片不能在此处移入或移出",
+  "New gallery “{name}”": "新建图库“{name}”",
+  "No matching gallery": "没有匹配的图库",
+  "Add to galleries": "添加到图库",
+  "Remove from galleries": "从图库中移除",
+  "Search gallery": "搜索图库",
 };

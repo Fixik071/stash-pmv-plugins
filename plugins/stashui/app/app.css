@@ -2256,3 +2256,5 @@ html.kb-glass .kb-ed-hit, html.kb-glass .kb-ed-seg, html.kb-glass .kb-ed-out { b
 .kb-gif.has-target .kb-gif-grid { opacity: .85; }
 html.kb-glass .kb-pfx-row { border-radius: 12px; }
 html.kb-glass .kb-pfx-row:hover { background: color-mix(in srgb, var(--pink) 8%, transparent); }
+/* a folder / zip gallery an image is in: stays, can't be taken out */
+.kb-chip.is-locked { opacity: .75; cursor: default; }
