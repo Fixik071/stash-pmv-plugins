@@ -2634,4 +2634,12 @@ export default {
   "Add to galleries": "Thêm vào thư viện",
   "Remove from galleries": "Xóa khỏi thư viện",
   "Search gallery": "Tìm thư viện",
+  "Add images": "Thêm ảnh",
+  "Pick images from your library and put them into this gallery": "Chọn ảnh từ thư viện của bạn và đưa vào thư viện ảnh này",
+  "Add images to the gallery": "Thêm ảnh vào thư viện ảnh",
+  "Everything you tick is added to “{name}”. Images that are already in it aren't shown.": "Mọi thứ bạn chọn sẽ được thêm vào “{name}”. Ảnh đã có trong đó không hiển thị.",
+  "{n} images added to the gallery": "Đã thêm {n} ảnh vào thư viện ảnh",
+  "Gamma": "Gamma",
+  "Warmth": "Độ ấm màu",
+  "Sharpness": "Độ sắc nét",
 };

@@ -1,6 +1,7 @@
 // Scene player: custom controls, timeline with thumbnails, resume, history,
 // queue/random/endless, keyboard, placard with all details.
 
+import { pfxOf as pfxOfPrefs, pfxFlat as pfxFlatPrefs, pfxFilter, pfxPage, pfxUnit, PFX_ROWS, PFX_DEFAULT } from "../picturefx.js";
 import { esc, icon, fmtDuration, store, toast, errorToast, promptDialog, confirmDialog, openDrawer } from "../ui.js";
 import { t } from "../i18n.js";
 import { getScene, findItems, saveActivity, addPlay, gql, pluginConfig, setPluginConfig } from "../api.js";
@@ -326,13 +327,12 @@ export async function render(host, params, query = {}) {
     loadAt(i, v.currentTime, !v.paused);
   }
   // Picture: brightness / contrast / saturation / hue – a CSS filter on the video (kept for every video in this browser)
-  const PFX_ROWS = [["b", "Brightness", 40, 180, "%"], ["c", "Contrast", 40, 180, "%"], ["s", "Saturation", 0, 250, "%"], ["h", "Hue", -180, 180, "°"]];
-  const pfxOf = () => Object.assign({ b: 100, c: 100, s: 100, h: 0 }, prefs.pfx || {});
-  const pfxFlat = () => { const p = pfxOf(); return p.b === 100 && p.c === 100 && p.s === 100 && p.h === 0; };
+  const pfxOf = () => pfxOfPrefs(prefs);
+  const pfxFlat = () => pfxFlatPrefs(prefs);
   function applyPfx() {
-    const p = pfxOf();
     stage.classList.toggle("has-pfx", !pfxFlat());
-    stage.style.setProperty("--pfx", pfxFlat() ? "none" : `brightness(${p.b}%) contrast(${p.c}%) saturate(${p.s}%)${p.h ? ` hue-rotate(${p.h}deg)` : ""}`);
+    stage.style.setProperty("--pfx", pfxFilter(prefs));
+    pfxPage(prefs);
   }
   // Menu: quality, subtitles, speed (one button instead of three – the bar is full enough)
   function menuHtml() {
@@ -452,7 +452,7 @@ export async function render(host, params, query = {}) {
     if (pfxFlat()) delete prefs.pfx;
     applyPfx();
     const out = menu.querySelector(`[data-pfxv="${k}"]`);
-    if (out) out.textContent = val + (k === "h" ? "°" : "%");
+    if (out) out.textContent = val + pfxUnit(k);
     const rb = menu.querySelector("[data-pfxreset]");
     if (rb) rb.classList.toggle("is-disabled", pfxFlat());
   };
@@ -468,7 +468,7 @@ export async function render(host, params, query = {}) {
   menu.addEventListener("dblclick", (e) => {
     const k = e.target.dataset && e.target.dataset.pfx;
     if (!k) return;
-    const def = k === "h" ? 0 : 100;
+    const def = PFX_DEFAULT[k];
     e.target.value = def;
     setPfx(k, def);
     savePrefs();

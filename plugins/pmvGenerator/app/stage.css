@@ -803,3 +803,5 @@ html.kb-glass .kb-pmvg-lsrow select { background: rgba(255, 255, 255, .08); bord
 .kb-pmvg-mbtn, .kb-pmvg-pins { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .kb-pmvg-pins .kb-chip button { padding: 0 2px; border: 0; color: inherit; background: transparent; }
 html.kb-glass .kb-pmvg-moments { border-color: var(--glass-edge); background: var(--glass-shine), var(--glass-deep, var(--glass)); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); }
+/* the mini player keeps the picture settings of the player */
+html.kb-has-pfx .kb-mini-screen :is(video, canvas) { filter: var(--pfx-page); }

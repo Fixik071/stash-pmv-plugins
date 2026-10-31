@@ -2639,4 +2639,12 @@ export default {
   "Add to galleries": "Dodaj do galerii",
   "Remove from galleries": "Usuń z galerii",
   "Search gallery": "Szukaj galerii",
+  "Add images": "Dodaj obrazy",
+  "Pick images from your library and put them into this gallery": "Wybierz obrazy z biblioteki i umieść je w tej galerii",
+  "Add images to the gallery": "Dodaj obrazy do galerii",
+  "Everything you tick is added to “{name}”. Images that are already in it aren't shown.": "Wszystko, co zaznaczysz, zostanie dodane do „{name}”. Obrazy, które już w niej są, nie są pokazywane.",
+  "{n} images added to the gallery": "Dodano do galerii obrazy: {n}",
+  "Gamma": "Gamma",
+  "Warmth": "Ciepło barw",
+  "Sharpness": "Ostrość",
 };

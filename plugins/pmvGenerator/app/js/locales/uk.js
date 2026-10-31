@@ -2674,4 +2674,12 @@ export default {
   "Add to galleries": "Додати до галерей",
   "Remove from galleries": "Прибрати з галерей",
   "Search gallery": "Знайти галерею",
+  "Add images": "Додати зображення",
+  "Pick images from your library and put them into this gallery": "Виберіть зображення з бібліотеки та помістіть їх у цю галерею",
+  "Add images to the gallery": "Додати зображення до галереї",
+  "Everything you tick is added to “{name}”. Images that are already in it aren't shown.": "Усе позначене буде додано до «{name}». Зображення, які вже в ній, не показуються.",
+  "{n} images added to the gallery": "Додано зображень до галереї: {n}",
+  "Gamma": "Гама",
+  "Warmth": "Теплота",
+  "Sharpness": "Різкість",
 };

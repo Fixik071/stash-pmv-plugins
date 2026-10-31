@@ -2676,4 +2676,12 @@ export default {
   "Add to galleries": "Добавить в галереи",
   "Remove from galleries": "Убрать из галерей",
   "Search gallery": "Найти галерею",
+  "Add images": "Добавить изображения",
+  "Pick images from your library and put them into this gallery": "Выберите изображения из библиотеки и поместите их в эту галерею",
+  "Add images to the gallery": "Добавить изображения в галерею",
+  "Everything you tick is added to “{name}”. Images that are already in it aren't shown.": "Всё отмеченное будет добавлено в «{name}». Изображения, которые уже в ней, не показываются.",
+  "{n} images added to the gallery": "Добавлено изображений в галерею: {n}",
+  "Gamma": "Гамма",
+  "Warmth": "Теплота",
+  "Sharpness": "Резкость",
 };

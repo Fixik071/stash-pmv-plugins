@@ -2698,4 +2698,12 @@ export default {
   "Add to galleries": "添加到图库",
   "Remove from galleries": "从图库中移除",
   "Search gallery": "搜索图库",
+  "Add images": "添加图片",
+  "Pick images from your library and put them into this gallery": "从图库中挑选图片并放入此图库",
+  "Add images to the gallery": "向图库添加图片",
+  "Everything you tick is added to “{name}”. Images that are already in it aren't shown.": "勾选的所有图片都会添加到“{name}”。已在其中的图片不会显示。",
+  "{n} images added to the gallery": "已向图库添加 {n} 张图片",
+  "Gamma": "伽马",
+  "Warmth": "色温",
+  "Sharpness": "锐度",
 };

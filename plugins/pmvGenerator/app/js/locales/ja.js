@@ -2641,4 +2641,12 @@ export default {
   "Add to galleries": "ギャラリーに追加",
   "Remove from galleries": "ギャラリーから外す",
   "Search gallery": "ギャラリーを検索",
+  "Add images": "画像を追加",
+  "Pick images from your library and put them into this gallery": "ライブラリから画像を選んでこのギャラリーに入れます",
+  "Add images to the gallery": "ギャラリーに画像を追加",
+  "Everything you tick is added to “{name}”. Images that are already in it aren't shown.": "チェックしたものはすべて「{name}」に追加されます。すでに入っている画像は表示されません。",
+  "{n} images added to the gallery": "ギャラリーに画像を{n}件追加しました",
+  "Gamma": "ガンマ",
+  "Warmth": "色温度",
+  "Sharpness": "シャープネス",
 };

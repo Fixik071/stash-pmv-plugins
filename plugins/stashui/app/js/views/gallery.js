@@ -5,6 +5,8 @@ import { t } from "../i18n.js";
 import { getGallery, setFavorite, favoriteTagId } from "../api.js";
 import { mediaBrowser } from "./media.js";
 import { openEditor } from "./edit.js";
+import { openAddMedia } from "./perfadd.js";
+import { isHandMade } from "./gallerypicker.js";
 import { app, go } from "../main.js";
 
 import { mountSlots } from "../ext.js";
@@ -30,6 +32,7 @@ export async function render(main, params, query) {
       </div>
       <div class="kb-head-tools">
         <button class="kb-btn" data-fav><span class="kb-dotmini"></span>${fav ? t("Remove favorite") : t("Favorite")}</button>
+        ${isHandMade(g) ? `<button class="kb-btn" data-addimg title="${esc(t("Pick images from your library and put them into this gallery"))}">${icon("plus")}${t("Add images")}</button>` : ""}
         <button class="kb-btn" data-edit>${icon("edit")}${t("Edit")}</button>
         <button class="kb-btn is-primary" data-slides>${icon("slides")}${t("Slideshow")}</button>
       </div>
@@ -45,6 +48,17 @@ export async function render(main, params, query) {
     defaults: { image: { sort: "path", dir: "ASC" } },
     base: () => ({ filter: { galleries: { value: [g.id], modifier: "INCLUDES" } } }),
   });
+  const addBtn = main.querySelector("[data-addimg]");
+  if (addBtn)
+    addBtn.onclick = () =>
+      openAddMedia({ id: g.id, name: name }, () => go("gallery/" + g.id, true), {
+        only: ["image"],
+        title: t("Add images to the gallery"),
+        hint: t("Everything you tick is added to “{name}”. Images that are already in it aren't shown.", { name }),
+        filter: (gid) => ({ galleries: { value: [gid], modifier: "EXCLUDES" } }),
+        link: (gid) => ({ gallery_ids: { ids: [gid], mode: "ADD" } }),
+        done: (n) => t("{n} images added to the gallery", { n }),
+      });
   main.querySelector("[data-edit]").onclick = () => openEditor("gallery", [{ id: g.id }], { onSaved: () => go("gallery/" + g.id, true), onDeleted: () => go("galleries", true) });
   main.querySelector("[data-fav]").onclick = async () => {
     try {

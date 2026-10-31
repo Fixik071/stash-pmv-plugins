@@ -2595,4 +2595,12 @@ export default {
   "Add to galleries": "Zu Galerien hinzufügen",
   "Remove from galleries": "Aus Galerien entfernen",
   "Search gallery": "Galerie suchen",
+  "Add images": "Bilder hinzufügen",
+  "Pick images from your library and put them into this gallery": "Bilder aus deiner Bibliothek auswählen und in diese Galerie legen",
+  "Add images to the gallery": "Bilder zur Galerie hinzufügen",
+  "Everything you tick is added to “{name}”. Images that are already in it aren't shown.": "Alles, was du ankreuzt, wird zu „{name}“ hinzugefügt. Bilder, die schon darin sind, werden nicht angezeigt.",
+  "{n} images added to the gallery": "{n} Bilder zur Galerie hinzugefügt",
+  "Gamma": "Gamma",
+  "Warmth": "Wärme",
+  "Sharpness": "Schärfe",
 };
