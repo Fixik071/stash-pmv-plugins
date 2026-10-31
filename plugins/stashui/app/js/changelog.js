@@ -7,6 +7,13 @@
 
 export const CHANGES = [
   {
+    v: "3.134.3",
+    date: "2026-10-31",
+    items: [
+      ["ui", "Fix: the Editor page showed “Cannot read properties of undefined (reading ‘split’)” instead of the scene list when a scene had no title (cam recordings, clips …). Scenes without a title are named after their file now.", "修复：当场景没有标题时（例如摄像头录像、剪辑），编辑器页面会显示“Cannot read properties of undefined (reading ‘split’)”而不是场景列表。现在没有标题的场景会以文件名显示。", "editor::.kb-ed"],
+    ],
+  },
+  {
     v: "3.134.2",
     date: "2026-10-31",
     items: [

@@ -24,10 +24,12 @@ const SIZES = [
   ["1080x1920", "Tall (1080×1920)"],
   ["1080x1080", "Square (1080×1080)"],
 ];
-const Q = `id title files { duration width height } paths { screenshot stream }`;
+const Q = `id title files { path basename duration width height } paths { screenshot stream }`;
+// A scene without a title (cam recordings, clips …) is named after its file
+const nameOf = (sc) => sc.title || (sc.files && sc.files[0] && (sc.files[0].basename || String(sc.files[0].path || "").split(/[\\/]/).pop())) || "#" + sc.id;
 
 let uid = 0;
-const pieceOf = (sc, start, end) => ({ uid: ++uid, scene: { id: sc.id, title: sc.title || (sc.files[0] && sc.files[0].path) || "#" + sc.id, dur: (sc.files[0] || {}).duration || 0, w: (sc.files[0] || {}).width || 0, h: (sc.files[0] || {}).height || 0, shot: sc.paths.screenshot, stream: sc.paths.stream }, start, end, speed: 1 });
+const pieceOf = (sc, start, end) => ({ uid: ++uid, scene: { id: sc.id, title: nameOf(sc), dur: (sc.files[0] || {}).duration || 0, w: (sc.files[0] || {}).width || 0, h: (sc.files[0] || {}).height || 0, shot: sc.paths.screenshot, stream: sc.paths.stream }, start, end, speed: 1 });
 
 export async function render(main) {
   const o = Object.assign({ name: "", size: "auto", fade: 0, audio: "keep", folder: "Clips" }, store.get("editorOpts", {}));
@@ -154,7 +156,7 @@ export async function render(main) {
         d.findScenes.scenes
           .map(
             (s) => `<div class="kb-ed-hit" data-sid="${esc(s.id)}"><span class="kb-ed-thumb">${s.paths.screenshot ? `<img alt="" loading="lazy" src="${esc(s.paths.screenshot)}">` : ""}</span>
-        <span class="kb-ed-hitinfo"><b title="${esc(s.title || "")}">${esc(s.title || (s.files[0] ? s.files[0].path.split(/[\\/]/).pop() : "#" + s.id))}</b><small>${s.files[0] ? fmtDuration(Math.round(s.files[0].duration)) + " · " + s.files[0].height + "p" : ""}</small></span>
+        <span class="kb-ed-hitinfo"><b title="${esc(s.title || "")}">${esc(nameOf(s))}</b><small>${s.files[0] ? fmtDuration(Math.round(s.files[0].duration)) + " · " + s.files[0].height + "p" : ""}</small></span>
         <button class="kb-btn" data-addscene>${icon("plus")}${t("Add")}</button></div>`,
           )
           .join("") || `<p class="kb-hint">${t("No scene found.")}</p>`;
