@@ -10,7 +10,7 @@ export const CHANGES = [
     v: "3.134.0",
     date: "2026-10-31",
     items: [
-      ["ui", "New: an “Add images” button on the page of a gallery you made by hand – pick images from your library and put them in. Folder and zip galleries don’t have it (Stash fills those from the files). Only tested against a mock Stash.", "新：手动创建的图库页面新增“添加图片”按钮——从库中挑选图片放入。文件夹和压缩包图库没有此按钮（Stash 会根据文件自动填充）。仅在模拟 Stash 上测试过。", "gallery/702::[data-edit]"],
+      ["ui", "New: an “Add images” button on the page of a gallery you made by hand – pick images from your library and put them in. Folder and zip galleries don’t have it (Stash fills those from the files). Only tested against a mock Stash.", "新：手动创建的图库页面新增“添加图片”按钮——从库中挑选图片放入。文件夹和压缩包图库没有此按钮（Stash 会根据文件自动填充）。仅在模拟 Stash 上测试过。"],
       ["ui", "The player’s Picture sliders got gamma, warmth and sharpness, and the setting now also applies in the mini player. Sharpness is heavier for the browser – leave it at 0 if playback stutters. Only tested against a mock Stash.", "播放器的“画面”滑块新增伽马、色温和锐度，并且该设置现在也适用于迷你播放器。锐度对浏览器负担较大——如果播放卡顿请保持为 0。仅在模拟 Stash 上测试过。", "scene/@scene::[data-menubtn]"],
     ],
   },
