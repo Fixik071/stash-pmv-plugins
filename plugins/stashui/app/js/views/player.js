@@ -980,7 +980,8 @@ export async function render(host, params, query = {}) {
   }
   v.addEventListener("ended", () => {
     flushActivity(true);
-    if (prefs.mode !== "one" && prefs.mode !== "stop" && !mini) next(1); // the mini player just stops
+    // (the mini player just stops; so does the player while the video is being cut – dragging the bar to the very end must not move on)
+    if (prefs.mode !== "one" && prefs.mode !== "stop" && !mini && !stage.classList.contains("is-editing")) next(1);
   });
 
   // Sections in the info bar (queue, up next, similar): open by default, each one can be folded away

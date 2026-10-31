@@ -7,6 +7,17 @@
 
 export const CHANGES = [
   {
+    v: "3.136.2",
+    date: "2026-10-31",
+    items: [
+      [
+        "ui",
+        "Fixed: while you cut a video (Crop / edit), dragging the bar to the very end made the video play to its end and the player moved on to the next one, closing the editor. The player now stays put while the editor is open.",
+        "修复：剪辑视频（裁剪/编辑）时，把时间条拖到最末尾会让视频播放到结尾，播放器随即跳到下一个视频并关闭编辑器。现在编辑器打开期间播放器会留在原处。",
+      ],
+    ],
+  },
+  {
     v: "3.136.1",
     date: "2026-10-31",
     items: [
