@@ -2652,7 +2652,5 @@ export default {
   "Drag to trim the end": "Kéo để cắt phần cuối",
   "Drag to move the whole part": "Kéo để di chuyển cả đoạn",
   "Drag the ends on the timeline to trim this piece – or type the times below.": "Kéo hai đầu trên dòng thời gian để cắt đoạn này – hoặc nhập thời gian bên dưới.",
-  "Sequence": "Chuỗi",
-  "Drag a piece to move it, drag its edges to trim it.": "Kéo một đoạn để di chuyển, kéo cạnh của nó để cắt.",
   "Added – trim it on the timeline, or type the times": "Đã thêm – cắt trên dòng thời gian hoặc nhập thời gian",
 };

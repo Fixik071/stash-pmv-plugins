@@ -2694,7 +2694,5 @@ export default {
   "Drag to trim the end": "Потяните, чтобы обрезать конец",
   "Drag to move the whole part": "Потяните, чтобы переместить всю часть",
   "Drag the ends on the timeline to trim this piece – or type the times below.": "Тяните края на временной шкале, чтобы обрезать этот фрагмент, или введите время ниже.",
-  "Sequence": "Последовательность",
-  "Drag a piece to move it, drag its edges to trim it.": "Потяните фрагмент, чтобы переместить, его края — чтобы обрезать.",
   "Added – trim it on the timeline, or type the times": "Добавлено — обрежьте на временной шкале или введите время",
 };

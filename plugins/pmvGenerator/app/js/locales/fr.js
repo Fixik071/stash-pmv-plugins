@@ -2599,7 +2599,5 @@ export default {
   "Drag to trim the end": "Glisser pour couper la fin",
   "Drag to move the whole part": "Glisser pour déplacer toute la partie",
   "Drag the ends on the timeline to trim this piece – or type the times below.": "Faites glisser les extrémités sur la timeline pour couper ce morceau – ou saisissez les temps ci-dessous.",
-  "Sequence": "Séquence",
-  "Drag a piece to move it, drag its edges to trim it.": "Faites glisser un morceau pour le déplacer, ses bords pour le couper.",
   "Added – trim it on the timeline, or type the times": "Ajouté – coupez-le sur la timeline ou saisissez les temps",
 };

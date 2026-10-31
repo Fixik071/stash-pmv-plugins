@@ -7,6 +7,13 @@
 
 export const CHANGES = [
   {
+    v: "3.135.1",
+    date: "2026-10-31",
+    items: [
+      ["ui", "The Editor's “Sequence” strip is gone again – it only repeated the list of pieces (the ↑ ↓ buttons put a piece somewhere else) and the timeline above it (which trims the chosen piece). The Editor keeps the timeline with the video's pictures for the piece you picked.", "编辑器的“序列”条已移除——它只是重复了片段列表（↑ ↓ 按钮可调整位置）和上方的时间轴（用于裁剪所选片段）。编辑器保留了所选片段的带视频画面的时间轴。"],
+    ],
+  },
+  {
     v: "3.135.0",
     date: "2026-10-31",
     items: [

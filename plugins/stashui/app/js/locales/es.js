@@ -2635,7 +2635,5 @@ export default {
   "Drag to trim the end": "Arrastra para recortar el final",
   "Drag to move the whole part": "Arrastra para mover toda la parte",
   "Drag the ends on the timeline to trim this piece – or type the times below.": "Arrastra los extremos en la línea de tiempo para recortar este fragmento, o escribe los tiempos abajo.",
-  "Sequence": "Secuencia",
-  "Drag a piece to move it, drag its edges to trim it.": "Arrastra un fragmento para moverlo, arrastra sus bordes para recortarlo.",
   "Added – trim it on the timeline, or type the times": "Añadido: recórtalo en la línea de tiempo o escribe los tiempos",
 };

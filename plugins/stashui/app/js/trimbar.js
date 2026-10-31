@@ -409,7 +409,7 @@ export function createTrim(host, o = {}) {
     emit(false);
   }
   function onDown(e) {
-    if (!dur || (e.button != null && e.button !== 0)) return;
+    if (!dur || !track.clientWidth || (e.button != null && e.button !== 0)) return; // (a bar that isn't laid out – hidden tab – can't tell where a press is)
     const hEl = e.target.closest("[data-h]");
     const inSel = e.target.closest("[data-sel]");
     const kind = hEl ? hEl.dataset.h : inSel && s.end != null ? "move" : "scrub";

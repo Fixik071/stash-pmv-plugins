@@ -2716,7 +2716,5 @@ export default {
   "Drag to trim the end": "拖动以裁剪终点",
   "Drag to move the whole part": "拖动以移动整个片段",
   "Drag the ends on the timeline to trim this piece – or type the times below.": "在时间轴上拖动两端来裁剪此片段，或在下方输入时间。",
-  "Sequence": "序列",
-  "Drag a piece to move it, drag its edges to trim it.": "拖动片段可移动，拖动其边缘可裁剪。",
   "Added – trim it on the timeline, or type the times": "已添加——在时间轴上裁剪，或输入时间",
 };

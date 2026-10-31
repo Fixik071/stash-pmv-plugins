@@ -2659,7 +2659,5 @@ export default {
   "Drag to trim the end": "ドラッグして終了位置を調整",
   "Drag to move the whole part": "ドラッグして範囲全体を移動",
   "Drag the ends on the timeline to trim this piece – or type the times below.": "タイムラインの両端をドラッグしてこのピースをトリミングするか、下に時間を入力します。",
-  "Sequence": "シーケンス",
-  "Drag a piece to move it, drag its edges to trim it.": "ピースをドラッグして移動、端をドラッグしてトリミングします。",
   "Added – trim it on the timeline, or type the times": "追加しました – タイムラインでトリミングするか、時間を入力してください",
 };

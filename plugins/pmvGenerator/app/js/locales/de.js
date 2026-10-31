@@ -2613,7 +2613,5 @@ export default {
   "Drag to trim the end": "Ziehen, um das Ende zu kürzen",
   "Drag to move the whole part": "Ziehen, um den ganzen Abschnitt zu verschieben",
   "Drag the ends on the timeline to trim this piece – or type the times below.": "Zieh die Enden auf der Zeitleiste, um dieses Stück zu kürzen – oder tippe unten die Zeiten ein.",
-  "Sequence": "Abfolge",
-  "Drag a piece to move it, drag its edges to trim it.": "Zieh ein Stück zum Verschieben, zieh seine Ränder zum Kürzen.",
   "Added – trim it on the timeline, or type the times": "Hinzugefügt – kürze es auf der Zeitleiste oder tippe die Zeiten ein",
 };

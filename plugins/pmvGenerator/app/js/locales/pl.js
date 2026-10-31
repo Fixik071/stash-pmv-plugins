@@ -2657,7 +2657,5 @@ export default {
   "Drag to trim the end": "Przeciągnij, aby przyciąć koniec",
   "Drag to move the whole part": "Przeciągnij, aby przesunąć cały fragment",
   "Drag the ends on the timeline to trim this piece – or type the times below.": "Przeciągaj końce na osi czasu, aby przyciąć ten fragment – albo wpisz czasy poniżej.",
-  "Sequence": "Sekwencja",
-  "Drag a piece to move it, drag its edges to trim it.": "Przeciągnij fragment, aby go przesunąć, a jego krawędzie, aby przyciąć.",
   "Added – trim it on the timeline, or type the times": "Dodano – przytnij na osi czasu albo wpisz czasy",
 };

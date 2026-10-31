@@ -2692,7 +2692,5 @@ export default {
   "Drag to trim the end": "Потягніть, щоб обрізати кінець",
   "Drag to move the whole part": "Потягніть, щоб перемістити всю частину",
   "Drag the ends on the timeline to trim this piece – or type the times below.": "Тягніть краї на часовій шкалі, щоб обрізати цей фрагмент, або введіть час нижче.",
-  "Sequence": "Послідовність",
-  "Drag a piece to move it, drag its edges to trim it.": "Потягніть фрагмент, щоб перемістити, його краї — щоб обрізати.",
   "Added – trim it on the timeline, or type the times": "Додано — обріжте на часовій шкалі або введіть час",
 };
