@@ -7,6 +7,7 @@ import { esc, icon, toast, errorToast, openDrawer, store, fmtDuration } from "./
 import { t } from "./i18n.js";
 import { gql, getScene, findItems, pluginConfig, setPluginConfig } from "./api.js";
 import { parseTime } from "./audiox.js";
+import { bindTrim } from "./trimbar.js";
 
 const KEY = "oClips";
 const DEF_LEN = 8; // seconds, for a marker without an end
@@ -273,8 +274,10 @@ export function openOPicker({ scene, onDone }) {
   let pickedScene = null;
   let markers = [];
   let scenes = [];
+  let tb = null; // the timeline of the part of a scene (made when a scene is picked)
 
   const d = openDrawer({
+    onClose: () => tb && tb.destroy(),
     title: t("O clip"),
     body: `
       <p class="kb-hint">${t("Choose the clip that plays in a small window when the O moment of this video comes. Pick a marker, or a part of any scene.")}</p>
@@ -393,8 +396,17 @@ export function openOPicker({ scene, onDone }) {
       const v = $("[data-vid]");
       v.src = u;
       $("[data-part]").hidden = false;
+      const f0 = pickedScene.files[0] || {};
+      if (!tb) {
+        // the timeline: drag the ends to choose the part – the fields keep working, the bar follows them
+        const host = document.createElement("div");
+        host.className = "kb-tb-host";
+        $("[data-from]").closest(".kb-music-range").before(host);
+        tb = bindTrim(host, { video: v, duration: f0.duration || 0, from: $("[data-from]"), to: $("[data-to]"), parse: parseTime, format: mmss, compact: true, minLen: 0.5 });
+      }
+      tb.setSource({ duration: f0.duration || 0, fps: f0.frame_rate, src: u, sprite: pickedScene.paths && pickedScene.paths.vtt && pickedScene.paths.sprite ? { vtt: pickedScene.paths.vtt, url: pickedScene.paths.sprite } : null });
       $("[data-from]").value = mmss(0);
-      $("[data-to]").value = mmss(Math.min(DEF_LEN, (pickedScene.files[0] || {}).duration || DEF_LEN));
+      $("[data-to]").value = mmss(Math.min(DEF_LEN, f0.duration || DEF_LEN));
       $("[data-part]").scrollIntoView({ block: "nearest" });
     }
   };

@@ -9,6 +9,8 @@ import { runBackend } from "../interactive.js";
 import { parseTime } from "../audiox.js";
 import { createCropper } from "../cropbox.js";
 import { applyClipsDir } from "../clipsdir.js";
+import { bindTrim } from "../trimbar.js";
+import { fpsOf, fmtExact } from "../frames.js";
 
 export const fmt = (sec) => {
   sec = Math.max(0, sec || 0);
@@ -25,6 +27,7 @@ export function openClipCut(x, video) {
   const opts = Object.assign({ precise: true, join: false, folder: "same", meta: true, upscale: false }, store.get("clipOpts", {}));
   let stopAt = null;
   let cropper = null; // the crop rectangle on the picture while "Crop / zoom in" is on
+  let tb = null; // the timeline above the start / end fields
   const cropKey = "cropRect." + x.id;
 
   const d = openDrawer({
@@ -62,6 +65,7 @@ export function openClipCut(x, video) {
     onClose: () => {
       video && video.removeEventListener("timeupdate", onTime);
       cropper && cropper.destroy();
+      tb && tb.destroy();
     },
     foot: `<button class="kb-btn is-ghost" data-clear>${t("Clear list")}</button><span class="kb-spacer"></span><button class="kb-btn is-primary" data-save>${icon("download")}${t("Save clips")}</button>`,
   });
@@ -69,6 +73,23 @@ export function openClipCut(x, video) {
   const $ = (s) => el.querySelector(s);
   el.classList.add("kb-cut");
   applyClipsDir($("[data-sub]"));
+
+  // the timeline: drag the ends to trim, drag the part to move it – the fields above keep working, the bar follows them
+  const trimHost = document.createElement("div");
+  trimHost.className = "kb-tb-host";
+  $("[data-from]").closest(".kb-music-range").before(trimHost);
+  tb = bindTrim(trimHost, {
+    video,
+    duration: dur,
+    fps: fpsOf(x),
+    from: $("[data-from]"),
+    to: $("[data-to]"),
+    parse: parseTime,
+    format: fmtExact,
+    compact: true,
+    src: x.paths && x.paths.stream,
+    sprite: x.paths && x.paths.vtt && x.paths.sprite ? { vtt: x.paths.vtt, url: x.paths.sprite } : null,
+  });
 
   const now = () => (video ? video.currentTime : 0);
   el.querySelectorAll("[data-here]").forEach((b) => (b.onclick = () => ($(b.dataset.here === "from" ? "[data-from]" : "[data-to]").value = fmt(now()))));

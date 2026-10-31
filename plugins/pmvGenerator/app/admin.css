@@ -443,7 +443,8 @@ body.kb-embedded .kb-main { padding: 0; }
 @media (max-width: 700px) { .kb-srcpkgs { margin-left: 0; } .kb-srcpkg { grid-template-columns: 22px minmax(0, 1fr); } .kb-srcpkg > :last-child { grid-column: 2; justify-self: start; } }
 html.kb-glass .kb-srcpkgs { border: 1px solid var(--glass-edge); border-radius: 16px; background: var(--glass-shine), color-mix(in srgb, var(--bg-3) 30%, transparent); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .12); }
 html.kb-glass .kb-srccaret:hover { background: color-mix(in srgb, var(--bg-3) 45%, transparent); }
-.kb-cut-add { display: flex; align-items: center; gap: 12px; margin: 10px 0; }
+.kb-cut-add { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin: 10px 0; }
+.kb-cut-add .kb-btn { flex: none; white-space: nowrap; } /* (the three buttons were squeezed and cut off in the narrow drawer) */
 .kb-cut-list { margin: 8px 0 12px; }
 .kb-cut-row { display: grid; grid-template-columns: 22px auto minmax(0, 1fr) auto auto auto; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--line); }
 .kb-cut-row b { color: var(--pink); font: 700 15px/1 var(--f-display); }

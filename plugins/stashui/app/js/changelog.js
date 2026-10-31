@@ -7,6 +7,14 @@
 
 export const CHANGES = [
   {
+    v: "3.135.0",
+    date: "2026-10-31",
+    items: [
+      ["ui", "New: a timeline for choosing parts of a video. Instead of only typing seconds there is now a bar with the pictures of the video: drag the two ends to trim, drag the highlighted part to move it, press in the pictures to look at that spot, zoom in for long videos (+ / − / Fit, or Ctrl + mouse wheel). The time fields keep working and follow the bar. It is in Cut clips, Make a GIF, parts (markers – a part can have no end), Music from this video and the O clip picker. Keys on an end: ← → one frame, Shift a second, Alt a tenth of a second.", "新：用于选取视频片段的时间轴。除了输入秒数，现在还有一条带视频画面的时间条：拖动两端进行裁剪，拖动高亮部分可移动，点按画面可查看该位置，长视频可放大（+ / − / 适应，或 Ctrl + 鼠标滚轮）。时间输入框仍然可用，并会跟随时间条。可用于剪切片段、制作 GIF、片段（标记——片段可以没有结束点）、视频配乐和 O 片段选择。在端点上：← → 移动一帧，Shift 一秒，Alt 十分之一秒。", "scene/@scene::[data-cut]"],
+      ["ui", "The Editor now has a timeline like a video editor: the chosen piece on its video with handles to trim it, and a sequence of all pieces – drag a piece to put it somewhere else, drag its edges to trim it. Fix: the “Add” buttons in the Editor's scene list and in Cut clips were cut off when file names were long.", "编辑器现在有了类似视频编辑软件的时间轴：所选片段显示在其视频上，带有裁剪手柄；下方是所有片段的序列——拖动片段可调整位置，拖动其边缘可裁剪。修复：文件名较长时，编辑器场景列表和“剪切片段”中的“添加”按钮会被截断。", "editor::.kb-ed"],
+    ],
+  },
+  {
     v: "3.134.3",
     date: "2026-10-31",
     items: [

@@ -9,6 +9,7 @@ import { runBackend } from "../interactive.js";
 import { parseTime } from "../audiox.js";
 import { intoStash } from "./clipcut.js";
 import { applyClipsDir } from "../clipsdir.js";
+import { createTrim } from "../trimbar.js";
 
 const ft = (sec) => {
   sec = Math.max(0, Number(sec) || 0);
@@ -24,12 +25,12 @@ const SIZES = [
   ["1080x1920", "Tall (1080×1920)"],
   ["1080x1080", "Square (1080×1080)"],
 ];
-const Q = `id title files { path basename duration width height } paths { screenshot stream }`;
+const Q = `id title files { path basename duration width height frame_rate } paths { screenshot stream sprite vtt }`;
 // A scene without a title (cam recordings, clips …) is named after its file
 const nameOf = (sc) => sc.title || (sc.files && sc.files[0] && (sc.files[0].basename || String(sc.files[0].path || "").split(/[\\/]/).pop())) || "#" + sc.id;
 
 let uid = 0;
-const pieceOf = (sc, start, end) => ({ uid: ++uid, scene: { id: sc.id, title: nameOf(sc), dur: (sc.files[0] || {}).duration || 0, w: (sc.files[0] || {}).width || 0, h: (sc.files[0] || {}).height || 0, shot: sc.paths.screenshot, stream: sc.paths.stream }, start, end, speed: 1 });
+const pieceOf = (sc, start, end) => ({ uid: ++uid, scene: { id: sc.id, title: nameOf(sc), dur: (sc.files[0] || {}).duration || 0, w: (sc.files[0] || {}).width || 0, h: (sc.files[0] || {}).height || 0, fps: (sc.files[0] || {}).frame_rate || 30, shot: sc.paths.screenshot, stream: sc.paths.stream, sprite: sc.paths.vtt && sc.paths.sprite ? { vtt: sc.paths.vtt, url: sc.paths.sprite } : null }, start, end, speed: 1 });
 
 export async function render(main) {
   const o = Object.assign({ name: "", size: "auto", fade: 0, audio: "keep", folder: "Clips" }, store.get("editorOpts", {}));
@@ -59,6 +60,14 @@ export async function render(main) {
       </section>
       <section class="kb-ed-main">
         <div class="kb-ed-view"><video data-video controls playsinline preload="metadata"></video><div class="kb-ed-viewbar"><span data-now class="kb-hint"></span></div></div>
+        <div class="kb-ed-trim" data-trimwrap hidden>
+          <div class="kb-ed-trimhead"><b data-trimname></b><span class="kb-hint">${t("Drag the ends on the timeline to trim this piece – or type the times below.")}</span></div>
+          <div data-trimhost></div>
+        </div>
+        <div class="kb-ed-seqwrap" data-seqwrap hidden>
+          <div class="kb-ed-seqhead"><b>${t("Sequence")}</b><span class="kb-hint">${t("Drag a piece to move it, drag its edges to trim it.")}</span></div>
+          <div class="kb-ed-seq" data-seq></div>
+        </div>
         <div class="kb-ed-list" data-list></div>
         <div class="kb-ed-out">
           <label class="kb-form-row"><span>${t("Name")}</span><input class="kb-field" data-name type="text" placeholder="${esc(t("Edit"))}" value="${esc(o.name)}"></label>
@@ -95,7 +104,7 @@ export async function render(main) {
             <label>${t("From")} <input class="kb-field" data-in value="${ft(it.start)}" size="7"></label><button class="kb-btn is-ghost" data-here="in" title="${esc(t("Take the time of the preview"))}">${t("Here")}</button>
             <label>${t("to")} <input class="kb-field" data-out value="${ft(it.end)}" size="7"></label><button class="kb-btn is-ghost" data-here="out" title="${esc(t("Take the time of the preview"))}">${t("Here")}</button>
             <label>${t("Speed")} <select class="kb-field" data-speed>${SPEEDS.map((s) => `<option value="${s}"${s === it.speed ? " selected" : ""}>${s}×</option>`).join("")}</select></label>
-            <small>${fmtDuration(Math.round(len(it)))}${it.scene.dur ? ` · ${t("of {len}", { len: fmtDuration(Math.round(it.scene.dur)) })}` : ""}</small>
+            <small data-len>${lenText(it)}</small>
           </div>
         </div>
         <div class="kb-ed-acts">
@@ -108,6 +117,149 @@ export async function render(main) {
           )
           .join("")
       : `<div class="kb-empty"><b>${t("No pieces yet")}</b><p>${t("Search for a scene on the left and add it. Then set where each piece starts and ends – the preview shows it.")}</p></div>`;
+    paintSeq();
+    syncTrim();
+  }
+  const lenText = (it) => `${fmtDuration(Math.round(len(it)))}${it.scene.dur ? ` · ${t("of {len}", { len: fmtDuration(Math.round(it.scene.dur)) })}` : ""}`;
+  // While a handle is dragged only what changed is updated (rebuilding the list would drop the focus and the drag)
+  function syncRow(i) {
+    const it = items[i];
+    const row = $(`.kb-ed-seg[data-i="${i}"]`);
+    if (!it || !row) return;
+    row.querySelector("[data-in]").value = ft(it.start);
+    row.querySelector("[data-out]").value = ft(it.end);
+    row.querySelector("[data-len]").textContent = lenText(it);
+    const blk = $(`.kb-ed-blk[data-b="${i}"]`);
+    if (blk) {
+      blk.style.flexGrow = Math.max(len(it), 0.5);
+      blk.querySelector("small").textContent = fmtDuration(Math.round(len(it)));
+      blk.title = `${it.scene.title} · ${ft(it.start)} – ${ft(it.end)}${it.speed !== 1 ? ` · ${it.speed}×` : ""}`;
+    }
+    sub();
+  }
+
+  // ---- the sequence: one block per piece, as wide as it plays; drag to reorder, drag an edge to trim ----
+  const seq = $("[data-seq]");
+  function paintSeq() {
+    $("[data-seqwrap]").hidden = !items.length;
+    seq.innerHTML = items.length
+      ? items
+          .map(
+            (it, i) => `<div class="kb-ed-blk${i === sel ? " is-sel" : ""}" data-b="${i}" style="flex: ${Math.max(len(it), 0.5)} 1 0" title="${esc(`${it.scene.title} · ${ft(it.start)} – ${ft(it.end)}${it.speed !== 1 ? ` · ${it.speed}×` : ""}`)}">
+        <span class="kb-ed-pic"${it.scene.shot ? ` style="background-image:url('${esc(it.scene.shot)}')"` : ""}></span>
+        <span class="kb-ed-edge is-l" data-edge="l" title="${esc(t("Drag to trim the start"))}"></span>
+        <span class="kb-ed-edge is-r" data-edge="r" title="${esc(t("Drag to trim the end"))}"></span>
+        <b>${i + 1}</b><small>${fmtDuration(Math.round(len(it)))}</small></div>`,
+          )
+          .join("") + `<i class="kb-ed-seqhead-line" data-seqline hidden></i><i class="kb-ed-ins" data-ins hidden></i>`
+      : "";
+    paintSeqLine();
+  }
+  function paintSeqLine() {
+    const line = $("[data-seqline]");
+    const it = items[watching];
+    const blk = it && $(`.kb-ed-blk[data-b="${watching}"]`);
+    if (!line || !blk || !(it.end > it.start)) return line && (line.hidden = true);
+    const f = Math.min(Math.max((video.currentTime - it.start) / (it.end - it.start), 0), 1);
+    line.hidden = false;
+    line.style.left = blk.offsetLeft + f * blk.offsetWidth + "px";
+  }
+  seq.addEventListener("pointerdown", (e) => {
+    const blk = e.target.closest("[data-b]");
+    if (!blk || (e.button != null && e.button !== 0)) return;
+    e.preventDefault();
+    const i = Number(blk.dataset.b);
+    const it = items[i];
+    const edge = e.target.closest("[data-edge]");
+    if (sel !== i || watching !== i) {
+      playAll = false;
+      show(i, false);
+    }
+    const st = { i, edge: edge ? edge.dataset.edge : "", x: e.clientX, s0: it.start, e0: it.end, perSec: blk.offsetWidth / Math.max(len(it), 0.05), moved: false, to: i };
+    const move = (ev) => {
+      const dx = ev.clientX - st.x;
+      if (st.edge) {
+        const d = (dx / st.perSec) * it.speed; // seconds of the video
+        if (st.edge === "l") it.start = Math.max(0, Math.min(st.s0 + d, st.e0 - 0.2));
+        else it.end = Math.min(it.scene.dur || Infinity, Math.max(st.e0 + d, st.s0 + 0.2));
+        it.start = Math.round(it.start * 100) / 100;
+        it.end = Math.round(it.end * 100) / 100;
+        syncRow(i);
+        syncTrim();
+        try {
+          video.fastSeek ? video.fastSeek(st.edge === "l" ? it.start : it.end) : (video.currentTime = st.edge === "l" ? it.start : it.end);
+        } catch (err) {
+          video.currentTime = st.edge === "l" ? it.start : it.end;
+        }
+        return;
+      }
+      if (Math.abs(dx) > 6) st.moved = true;
+      if (!st.moved) return;
+      seq.classList.add("is-moving");
+      // the place it would go to: before the first block whose middle is right of the pointer
+      const blocks = [...seq.querySelectorAll("[data-b]")];
+      let to = blocks.length;
+      for (const b of blocks) {
+        const r = b.getBoundingClientRect();
+        if (ev.clientX < r.left + r.width / 2) {
+          to = Number(b.dataset.b);
+          break;
+        }
+      }
+      st.to = to;
+      const ins = $("[data-ins]");
+      const ref = blocks[Math.min(to, blocks.length - 1)];
+      ins.hidden = false;
+      ins.style.left = (to >= blocks.length ? ref.offsetLeft + ref.offsetWidth : ref.offsetLeft) - 2 + "px";
+    };
+    const up = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", up);
+      seq.classList.remove("is-moving");
+      if (st.edge) {
+        saveDraft();
+        video.currentTime = st.edge === "l" ? it.start : it.end;
+      } else if (st.moved) {
+        const to = st.to > i ? st.to - 1 : st.to;
+        if (to !== i) {
+          const [m] = items.splice(i, 1);
+          items.splice(to, 0, m);
+          sel = to;
+          watching = to;
+        }
+        paintList();
+      }
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", up);
+  });
+
+  // ---- the timeline of the chosen piece ----
+  let trim = null;
+  function syncTrim() {
+    const wrap = $("[data-trimwrap]");
+    const it = items[sel];
+    wrap.hidden = !it;
+    if (!it) return;
+    $("[data-trimname]").textContent = `${t("Piece {n}", { n: sel + 1 })} · ${it.scene.title}`;
+    if (!trim) {
+      trim = createTrim($("[data-trimhost]"), {
+        video,
+        minLen: 0.2,
+        onChange(r, final) {
+          const cur = items[sel];
+          if (!cur) return;
+          cur.start = r.start;
+          cur.end = r.end == null ? cur.end : r.end;
+          syncRow(sel);
+          if (final) saveDraft();
+        },
+      });
+    }
+    trim.setSource({ duration: it.scene.dur || (watching === sel ? video.duration || 0 : 0), fps: it.scene.fps, sprite: it.scene.sprite || null, src: it.scene.stream });
+    trim.set(it.start, it.end);
   }
 
   // ---- preview ----
@@ -128,8 +280,13 @@ export async function render(main) {
       video.addEventListener("loadedmetadata", go, { once: true });
     } else go();
     main.querySelectorAll(".kb-ed-seg").forEach((e) => e.classList.toggle("is-sel", Number(e.dataset.i) === i));
+    main.querySelectorAll(".kb-ed-blk").forEach((e) => e.classList.toggle("is-sel", Number(e.dataset.b) === i));
+    syncTrim();
   }
+  video.addEventListener("seeked", () => paintSeqLine());
+  video.addEventListener("loadedmetadata", () => items[sel] && !items[sel].scene.dur && syncTrim()); // (a piece saved without its length)
   video.addEventListener("timeupdate", () => {
+    paintSeqLine();
     const it = items[watching];
     if (!it) return;
     $("[data-now]").textContent = `${t("Piece {n}", { n: watching + 1 })} · ${ft(video.currentTime)}`;
@@ -177,7 +334,7 @@ export async function render(main) {
     items.push(it);
     paintList();
     show(items.length - 1, false);
-    toast(t("Added – set the start and end below"), "ok");
+    toast(t("Added – trim it on the timeline, or type the times"), "ok");
   });
 
   // ---- editing the pieces ----
@@ -254,6 +411,7 @@ export async function render(main) {
     if (items.length && !(await confirmDialog({ title: t("Start over"), text: t("Remove all pieces?"), ok: t("Remove"), danger: true }))) return;
     items = [];
     watching = -1;
+    sel = -1;
     paintList();
   };
   for (const [sel2, key, num] of [["[data-name]", "name"], ["[data-size]", "size"], ["[data-fade]", "fade", true], ["[data-audio]", "audio"], ["[data-folder]", "folder"]]) {
@@ -327,6 +485,7 @@ export async function render(main) {
   if (items.length) show(0, false);
   return () => {
     alive = false;
+    trim && trim.destroy();
     video.pause();
     video.removeAttribute("src");
     video.load();

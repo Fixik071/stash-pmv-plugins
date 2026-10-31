@@ -10,6 +10,8 @@ import { parseTime } from "../audiox.js";
 import { createCropper } from "../cropbox.js";
 import { fmt } from "./clipcut.js";
 import { applyClipsDir } from "../clipsdir.js";
+import { bindTrim } from "../trimbar.js";
+import { fpsOf, fmtExact } from "../frames.js";
 
 const WIDTHS = [[320, "320 px"], [480, "480 px"], [640, "640 px"], [800, "800 px"], [1280, "1280 px"]];
 const FPS = [10, 12, 15, 20, 25];
@@ -22,6 +24,7 @@ export function openGifMaker(x, video) {
   const dur = (x.files[0] || {}).duration || 0;
   const o = Object.assign({ width: 480, fps: 15, speed: 1, quality: "good", loop: true, sub: true, stash: true, meta: true, targetMb: 0 }, store.get("gifOpts", {}));
   let cropper = null;
+  let tb = null; // the timeline above the start / end fields
   let stopAt = null;
   let busy = false;
   const cropKey = "gifCrop." + x.id;
@@ -79,6 +82,7 @@ export function openGifMaker(x, video) {
         video.playbackRate = 1;
       }
       cropper && cropper.destroy();
+      tb && tb.destroy();
     },
     foot: `<span class="kb-spacer"></span><button class="kb-btn is-primary" data-make>${icon("film")}${t("Make the GIF")}</button>`,
   });
@@ -86,6 +90,23 @@ export function openGifMaker(x, video) {
   const $ = (s) => el.querySelector(s);
   el.classList.add("kb-cut", "kb-gif");
   applyClipsDir($("[data-sub]"));
+
+  // the timeline: drag the ends to trim, drag the part to move it – the fields above keep working, the bar follows them
+  const trimHost = document.createElement("div");
+  trimHost.className = "kb-tb-host";
+  $("[data-from]").closest(".kb-music-range").before(trimHost);
+  tb = bindTrim(trimHost, {
+    video,
+    duration: dur,
+    fps: fpsOf(x),
+    from: $("[data-from]"),
+    to: $("[data-to]"),
+    parse: parseTime,
+    format: fmtExact,
+    compact: true,
+    src: x.paths && x.paths.stream,
+    sprite: x.paths && x.paths.vtt && x.paths.sprite ? { vtt: x.paths.vtt, url: x.paths.sprite } : null,
+  });
 
   const range = () => [parseTime($("[data-from]").value), parseTime($("[data-to]").value)];
   const estimate = () => {

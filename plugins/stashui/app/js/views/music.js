@@ -5,6 +5,8 @@ import { esc, icon, toast, errorToast, openDrawer, fmtDuration } from "../ui.js"
 import { t } from "../i18n.js";
 import { app, PMV_PAGE } from "../main.js";
 import { extractAudio, parseTime, fmtTime, downloadBlob } from "../audiox.js";
+import { bindTrim } from "../trimbar.js";
+import { fpsOf } from "../frames.js";
 
 const LIMIT = 20 * 60; // more sound than that at once is no song any more – and heavy for the browser
 
@@ -14,7 +16,9 @@ export function openMusic(x, video) {
   // Short video: all of it. Long one: 5 minutes from where you are
   const from = dur > LIMIT ? Math.floor(now) : 0;
   const to = dur > LIMIT ? Math.min(dur, from + 300) : dur;
+  let tb = null; // the timeline above the from / to fields
   const d = openDrawer({
+    onClose: () => tb && tb.destroy(),
     title: t("Music from this video"),
     body: `
       <p class="kb-hint">${t("Take the sound of this video – straight into the PMV Generator as the song, or as a sound file (.m4a).")}</p>
@@ -29,6 +33,24 @@ export function openMusic(x, video) {
   const el = d.el;
   const $ = (s) => el.querySelector(s);
   el.querySelectorAll("[data-here]").forEach((b) => (b.onclick = () => ($(b.dataset.here === "from" ? "[data-from]" : "[data-to]").value = fmtTime(video ? video.currentTime : 0))));
+
+  // the timeline: drag the ends to choose the part – the fields keep working, the bar follows them
+  const trimHost = document.createElement("div");
+  trimHost.className = "kb-tb-host";
+  $("[data-from]").closest(".kb-music-range").before(trimHost);
+  tb = bindTrim(trimHost, {
+    video,
+    duration: dur,
+    fps: fpsOf(x),
+    from: $("[data-from]"),
+    to: $("[data-to]"),
+    parse: parseTime,
+    format: (sec) => `${Math.floor(sec / 60)}:${(sec % 60).toFixed(1).padStart(4, "0")}`,
+    compact: true,
+    minLen: 0.5,
+    src: x.paths && x.paths.stream,
+    sprite: x.paths && x.paths.vtt && x.paths.sprite ? { vtt: x.paths.vtt, url: x.paths.sprite } : null,
+  });
 
   function range() {
     const a = parseTime($("[data-from]").value);

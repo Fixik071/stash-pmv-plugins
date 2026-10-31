@@ -21,38 +21,12 @@ import { createSlowmo, slowmoSupported } from "../slowmo.js";
 import { openMarkerEdit } from "../markeredit.js";
 import { generatePreviews } from "../genprev.js";
 import { fpsOf, stepFrame, snap, fmtExact } from "../frames.js";
+import { loadSprites } from "../sprites.js";
 import { videoGlow } from "../theme.js";
 import { nsfwKeeps } from "../display.js";
 import { mountSlots } from "../ext.js";
 import { oData, syncOf, pointsOf, addPoint, setPoint, removePoint, ownClips, clipsFor, oPrefs, setOPrefs, createOPlayer, openOPicker, refLen } from "../oclip.js";
 import { BINS, watchRecorder, watchBins, motionBins, combine, peaks } from "../heat.js";
-
-// Read Stash's sprite VTT: time ranges → region in the sprite image (once per scene; the picture is fetched ahead too)
-const spriteCache = new Map();
-function loadSprites(vttUrl, spriteUrl) {
-  const key = vttUrl + "|" + spriteUrl;
-  if (!spriteCache.has(key)) spriteCache.set(key, readSprites(vttUrl, spriteUrl).then((s) => (s ? s : (spriteCache.delete(key), null))));
-  return spriteCache.get(key);
-}
-async function readSprites(vttUrl, spriteUrl) {
-  try {
-    const res = await fetch(vttUrl);
-    if (!res.ok) return null;
-    const txt = await res.text();
-    const cues = [];
-    const re = /(\d+):(\d+):(\d+)\.(\d+)\s+-->\s+(\d+):(\d+):(\d+)\.(\d+)\s*\n([^\n]+)/g;
-    let m;
-    const secs = (h, mi, s, ms) => +h * 3600 + +mi * 60 + +s + +ms / 1000;
-    while ((m = re.exec(txt))) {
-      const xywh = (m[9].match(/#xywh=(\d+),(\d+),(\d+),(\d+)/) || []).slice(1).map(Number);
-      if (xywh.length === 4) cues.push({ start: secs(m[1], m[2], m[3], m[4]), end: secs(m[5], m[6], m[7], m[8]), xywh });
-    }
-    if (cues.length) new Image().src = spriteUrl; // load the picture now, so the first hover isn't empty
-    return cues.length ? { cues, url: spriteUrl, w: Math.max(...cues.map((c) => c.xywh[0] + c.xywh[2])) } : null;
-  } catch (e) {
-    return null;
-  }
-}
 
 // How the player goes on at the end: [mode, icon, label] – the button cycles through them
 const PLAY_MODES = [

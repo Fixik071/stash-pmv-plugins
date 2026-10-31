@@ -8,6 +8,7 @@ import { parseTime } from "./audiox.js";
 import { tagPicker } from "./views/tagpicker.js";
 import { generatePreviews } from "./genprev.js";
 import { fpsOf, frameAt, secOf, snap, showFrame, stepFrame, fmtExact } from "./frames.js";
+import { bindTrim } from "./trimbar.js";
 
 const FIELDS = "id title seconds end_seconds primary_tag { id name } tags { id name }";
 
@@ -61,6 +62,7 @@ export function openMarkerEdit({ scene, marker, video, defaultTag, done }) {
       </div>
     </div>`;
 
+  let tb = null; // the timeline above the start / end fields
   const d = openDrawer({
     title: isNew ? t("Add a part") : t("Edit the part"),
     body: `
@@ -74,7 +76,10 @@ export function openMarkerEdit({ scene, marker, video, defaultTag, done }) {
       <span class="kb-lab-t">${t("More tags")}</span>
       <div class="kb-tagpick" data-more></div>`,
     foot: `${marker ? `<button class="kb-btn is-ghost kb-qdel" data-del>${icon("close")}${t("Delete")}</button>` : ""}<span class="kb-spacer"></span><button class="kb-btn is-primary" data-save>${t("Save")}</button>`,
-    onClose: () => stopRepeat(),
+    onClose: () => {
+      stopRepeat();
+      tb && tb.destroy();
+    },
     dock: !!video,
   });
   const el = d.el;
@@ -83,6 +88,24 @@ export function openMarkerEdit({ scene, marker, video, defaultTag, done }) {
 
   // ---------- Start and end ----------
   const field = (which) => $(`[data-${which}]`);
+
+  // the timeline: drag the ends to trim, drag the part to move it – the fields keep working, the bar follows them (a part may have no end)
+  const trimHost = document.createElement("div");
+  trimHost.className = "kb-tb-host";
+  field("from").closest(".kb-form-row").before(trimHost);
+  tb = bindTrim(trimHost, {
+    video,
+    duration: dur,
+    fps,
+    from: field("from"),
+    to: field("to"),
+    parse: parseTime,
+    format: fmtExact,
+    optionalEnd: true,
+    compact: true,
+    src: scene.paths && scene.paths.stream,
+    sprite: scene.paths && scene.paths.vtt && scene.paths.sprite ? { vtt: scene.paths.vtt, url: scene.paths.sprite } : null,
+  });
   const valueOf = (which) => {
     const s = field(which).value.trim();
     const n = s ? parseTime(s) : NaN;
