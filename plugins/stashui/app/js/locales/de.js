@@ -2584,4 +2584,8 @@ export default {
   "Show hidden folders on the Folders page": "Versteckte Ordner auf der Ordnerseite zeigen",
   "Shown on all pages again.": "Wieder auf allen Seiten sichtbar.",
   "What lies in a hidden folder shows up on no page – only when you open the folder itself. Hide a folder on its page (Folders → open it → “Hide this folder”). Numbers such as the scene count of a performer or tag may still include it.": "Was in einem versteckten Ordner liegt, erscheint auf keiner Seite – nur wenn du den Ordner selbst öffnest. Verstecke einen Ordner auf seiner eigenen Seite (Ordner → öffnen → „Diesen Ordner verstecken“). Zahlen wie die Szenenanzahl eines Darstellers oder Tags können ihn trotzdem noch mitzählen.",
+  "Saturation": "Sättigung",
+  "Hue": "Farbton",
+  "Reset the picture": "Bild zurücksetzen",
+  "Double-click a slider to put it back to normal": "Doppelklick auf einen Regler setzt ihn zurück",
 };

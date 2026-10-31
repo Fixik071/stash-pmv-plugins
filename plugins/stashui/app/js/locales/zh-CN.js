@@ -2687,4 +2687,8 @@ export default {
   "Show hidden folders on the Folders page": "在文件夹页面显示隐藏的文件夹",
   "Shown on all pages again.": "已在所有页面重新显示。",
   "What lies in a hidden folder shows up on no page – only when you open the folder itself. Hide a folder on its page (Folders → open it → “Hide this folder”). Numbers such as the scene count of a performer or tag may still include it.": "隐藏文件夹里的内容不会出现在任何页面上——只有打开该文件夹本身时才会显示。请在文件夹自己的页面隐藏它（文件夹 → 打开 → “隐藏此文件夹”）。演员或标签的场景数量等数字可能仍包含这些内容。",
+  "Saturation": "饱和度",
+  "Hue": "色相",
+  "Reset the picture": "重置画面",
+  "Double-click a slider to put it back to normal": "双击滑块可恢复默认",
 };

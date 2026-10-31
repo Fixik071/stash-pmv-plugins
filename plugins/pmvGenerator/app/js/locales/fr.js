@@ -2570,4 +2570,8 @@ export default {
   "Show hidden folders on the Folders page": "Afficher les dossiers masqués sur la page Dossiers",
   "Shown on all pages again.": "De nouveau affiché sur toutes les pages.",
   "What lies in a hidden folder shows up on no page – only when you open the folder itself. Hide a folder on its page (Folders → open it → “Hide this folder”). Numbers such as the scene count of a performer or tag may still include it.": "Le contenu d’un dossier masqué n’apparaît sur aucune page – seulement quand vous ouvrez le dossier lui-même. Masquez un dossier depuis sa page (Dossiers → l’ouvrir → « Masquer ce dossier »). Les chiffres, comme le nombre de scènes d’une interprète ou d’un tag, peuvent encore l’inclure.",
+  "Saturation": "Saturation",
+  "Hue": "Teinte",
+  "Reset the picture": "Réinitialiser l'image",
+  "Double-click a slider to put it back to normal": "Double-cliquez sur un curseur pour le remettre à la normale",
 };

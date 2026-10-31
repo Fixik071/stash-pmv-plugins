@@ -2630,4 +2630,8 @@ export default {
   "Show hidden folders on the Folders page": "フォルダページに非表示のフォルダを表示",
   "Shown on all pages again.": "すべてのページに再び表示されます。",
   "What lies in a hidden folder shows up on no page – only when you open the folder itself. Hide a folder on its page (Folders → open it → “Hide this folder”). Numbers such as the scene count of a performer or tag may still include it.": "非表示のフォルダの中身はどのページにも表示されず、そのフォルダ自体を開いたときだけ表示されます。フォルダは、そのページで非表示にします（フォルダ → 開く → 「このフォルダを非表示」）。パフォーマーやタグのシーン数などの数字には含まれることがあります。",
+  "Saturation": "彩度",
+  "Hue": "色相",
+  "Reset the picture": "映像をリセット",
+  "Double-click a slider to put it back to normal": "スライダーをダブルクリックで元に戻す",
 };

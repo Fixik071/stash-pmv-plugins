@@ -2663,4 +2663,8 @@ export default {
   "Show hidden folders on the Folders page": "Показувати приховані папки на сторінці «Папки»",
   "Shown on all pages again.": "Знову показується на всіх сторінках.",
   "What lies in a hidden folder shows up on no page – only when you open the folder itself. Hide a folder on its page (Folders → open it → “Hide this folder”). Numbers such as the scene count of a performer or tag may still include it.": "Вміст прихованої папки не показується на жодній сторінці – лише коли ви відкриваєте саму папку. Приховуйте папку на її сторінці (Папки → відкрити → «Приховати цю папку»). Числа, наприклад кількість сцен у виконавця чи тега, можуть і далі його враховувати.",
+  "Saturation": "Насиченість",
+  "Hue": "Відтінок",
+  "Reset the picture": "Скинути зображення",
+  "Double-click a slider to put it back to normal": "Подвійний клік по повзунку повертає звичайне значення",
 };

@@ -2628,4 +2628,8 @@ export default {
   "Show hidden folders on the Folders page": "Pokazuj ukryte foldery na stronie Foldery",
   "Shown on all pages again.": "Znów widoczne na wszystkich stronach.",
   "What lies in a hidden folder shows up on no page – only when you open the folder itself. Hide a folder on its page (Folders → open it → “Hide this folder”). Numbers such as the scene count of a performer or tag may still include it.": "To, co leży w ukrytym folderze, nie pojawia się na żadnej stronie – tylko po otwarciu samego folderu. Ukryj folder na jego własnej stronie (Foldery → otwórz → „Ukryj ten folder”). Liczby, takie jak liczba scen wykonawcy lub tagu, mogą go nadal uwzględniać.",
+  "Saturation": "Nasycenie",
+  "Hue": "Odcień",
+  "Reset the picture": "Zresetuj obraz",
+  "Double-click a slider to put it back to normal": "Kliknij dwukrotnie suwak, aby przywrócić normalną wartość",
 };

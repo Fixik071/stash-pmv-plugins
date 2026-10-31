@@ -2623,4 +2623,8 @@ export default {
   "Show hidden folders on the Folders page": "Hiện thư mục đã ẩn trên trang Thư mục",
   "Shown on all pages again.": "Đã hiện lại trên mọi trang.",
   "What lies in a hidden folder shows up on no page – only when you open the folder itself. Hide a folder on its page (Folders → open it → “Hide this folder”). Numbers such as the scene count of a performer or tag may still include it.": "Nội dung trong thư mục đã ẩn không hiện trên trang nào – chỉ hiện khi bạn mở chính thư mục đó. Hãy ẩn thư mục ngay trên trang của nó (Thư mục → mở thư mục → “Ẩn thư mục này”). Các con số như số cảnh của diễn viên hay thẻ có thể vẫn tính cả phần này.",
+  "Saturation": "Độ bão hòa",
+  "Hue": "Sắc độ",
+  "Reset the picture": "Đặt lại hình ảnh",
+  "Double-click a slider to put it back to normal": "Nhấp đúp vào thanh trượt để về bình thường",
 };

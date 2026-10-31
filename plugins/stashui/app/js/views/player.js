@@ -325,6 +325,15 @@ export async function render(host, params, query = {}) {
     if (i === srcIdx) return;
     loadAt(i, v.currentTime, !v.paused);
   }
+  // Picture: brightness / contrast / saturation / hue – a CSS filter on the video (kept for every video in this browser)
+  const PFX_ROWS = [["b", "Brightness", 40, 180, "%"], ["c", "Contrast", 40, 180, "%"], ["s", "Saturation", 0, 250, "%"], ["h", "Hue", -180, 180, "°"]];
+  const pfxOf = () => Object.assign({ b: 100, c: 100, s: 100, h: 0 }, prefs.pfx || {});
+  const pfxFlat = () => { const p = pfxOf(); return p.b === 100 && p.c === 100 && p.s === 100 && p.h === 0; };
+  function applyPfx() {
+    const p = pfxOf();
+    stage.classList.toggle("has-pfx", !pfxFlat());
+    stage.style.setProperty("--pfx", pfxFlat() ? "none" : `brightness(${p.b}%) contrast(${p.c}%) saturate(${p.s}%)${p.h ? ` hue-rotate(${p.h}deg)` : ""}`);
+  }
   // Menu: quality, subtitles, speed (one button instead of three – the bar is full enough)
   function menuHtml() {
     const q = [[0, t("Original (direct)")], ...streams.map((s) => [sources.indexOf(s.url), s.label])];
@@ -335,6 +344,8 @@ export async function render(host, params, query = {}) {
       (vr ? `<div class="kb-pmenu-sec"><b>VR</b><div class="kb-pmenu-speeds">${[["", t("Off"), ""], ["180", "180°", ""], ["180sbs", "180° SBS", t("180° side by side")], ["360", "360°", ""], ["360tb", "360° TB", t("360° top/bottom")], ["360sbs", "360° SBS", t("360° side by side")]].map(([m, l, title]) => `<button type="button" class="kb-chip${vr.mode === m ? " is-on" : ""}" data-vr="${m}"${title ? ` title="${esc(title)}"` : ""}>${l}</button>`).join("")}</div></div>` : "") +
       `<div class="kb-pmenu-sec"><b>${t("Speed")}</b><div class="kb-pmenu-speeds">${[0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 2].map((s) => `<button type="button" class="kb-chip${v.playbackRate === s ? " is-on" : ""}" data-rate="${s}">${s}×</button>`).join("")}</div>` +
       (slowmoSupported() ? `<b title="${esc(t("Below 1× the missing pictures in between are made up on your graphics card – nothing to download"))}">${t("Smooth slow motion")}</b><div class="kb-pmenu-speeds">${[["off", "Off", ""], ["blend", "Blend", "Cross-fades the pictures – cheap, moving things leave a ghost"], ["motion", "Motion", "Follows the movement of the picture (uses the graphics card)"]].map(([m, l, h]) => `<button type="button" class="kb-chip${smoothMode() === m ? " is-on" : ""}" data-smooth="${m}"${h ? ` title="${esc(t(h))}"` : ""}>${t(l)}</button>`).join("")}</div>` : "") + `</div>` +
+      `<div class="kb-pmenu-sec kb-pfx"><b>${t("Picture")}</b>${PFX_ROWS.map(([k, label, lo, hi, unit]) => `<label class="kb-pfx-row" title="${esc(t("Double-click a slider to put it back to normal"))}"><span>${t(label)}</span><output data-pfxv="${k}">${pfxOf()[k]}${unit}</output><input type="range" data-pfx="${k}" min="${lo}" max="${hi}" step="1" value="${pfxOf()[k]}"></label>`).join("")}` +
+      `<button type="button" class="kb-pmenu-opt${pfxFlat() ? " is-disabled" : ""}" data-pfxreset>${icon("replay")}${t("Reset the picture")}</button></div>` +
       `<div class="kb-pmenu-sec"><button type="button" class="kb-pmenu-opt${prefs.fromStart ? " is-on" : ""}" data-fromstart title="${esc(t("Scenes you stopped halfway begin at 0:00 instead of where you left off. The saved point stays in Stash; the hint offers it as a button."))}">${prefs.fromStart ? icon("check") : "<i></i>"}${t("Always start from the beginning")}</button>` +
       `<button type="button" class="kb-pmenu-opt${prefs.randomStart ? " is-on" : ""}" data-randstart title="${esc(t("Every scene starts somewhere in the middle – for browsing around. Your resume points in Stash stay as they are."))}">${prefs.randomStart ? icon("check") : "<i></i>"}${t("Start at a random spot")}</button>` +
       `<button type="button" class="kb-pmenu-opt${loop && loop.b != null ? " is-on" : ""}" data-loop>${loop && loop.b != null ? icon("check") : "<i></i>"}${loop ? (loop.b == null ? t("A–B loop: set B here (L)") : t("A–B loop on – clear (L)")) : t("A–B loop: set A here (L)")}</button>` +
@@ -428,9 +439,41 @@ export async function render(host, params, query = {}) {
       prefs.slowSmooth = b.dataset.smooth;
       savePrefs();
       slow.update();
+    } else if (b.dataset.pfxreset != null) {
+      delete prefs.pfx;
+      savePrefs();
+      applyPfx();
     } else if (b.dataset.rate) v.playbackRate = v.defaultPlaybackRate = Number(b.dataset.rate); // default: survives a quality switch
     paintMenu();
   });
+  // The picture sliders change the filter while you drag (the menu is not repainted then – that would drop the slider)
+  const setPfx = (k, val) => {
+    prefs.pfx = Object.assign(pfxOf(), { [k]: val });
+    if (pfxFlat()) delete prefs.pfx;
+    applyPfx();
+    const out = menu.querySelector(`[data-pfxv="${k}"]`);
+    if (out) out.textContent = val + (k === "h" ? "°" : "%");
+    const rb = menu.querySelector("[data-pfxreset]");
+    if (rb) rb.classList.toggle("is-disabled", pfxFlat());
+  };
+  menu.addEventListener("input", (e) => {
+    const k = e.target.dataset && e.target.dataset.pfx;
+    if (k) setPfx(k, Number(e.target.value));
+  });
+  menu.addEventListener("change", (e) => {
+    if (!(e.target.dataset && e.target.dataset.pfx)) return;
+    savePrefs();
+    e.target.blur(); // or the player's keys stay dead while the slider has the focus
+  });
+  menu.addEventListener("dblclick", (e) => {
+    const k = e.target.dataset && e.target.dataset.pfx;
+    if (!k) return;
+    const def = k === "h" ? 0 : 100;
+    e.target.value = def;
+    setPfx(k, def);
+    savePrefs();
+  });
+  applyPfx();
   v.addEventListener("error", () => {
     if (srcIdx < sources.length - 1) {
       loadAt(srcIdx + 1, v.currentTime, true);

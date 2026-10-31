@@ -2665,4 +2665,8 @@ export default {
   "Show hidden folders on the Folders page": "Показывать скрытые папки на странице «Папки»",
   "Shown on all pages again.": "Снова показывается на всех страницах.",
   "What lies in a hidden folder shows up on no page – only when you open the folder itself. Hide a folder on its page (Folders → open it → “Hide this folder”). Numbers such as the scene count of a performer or tag may still include it.": "Содержимое скрытой папки не показывается ни на одной странице – только когда вы открываете саму папку. Скрывайте папку на её странице (Папки → открыть → «Скрыть эту папку»). Числа, например количество сцен у исполнителя или тега, могут по-прежнему его учитывать.",
+  "Saturation": "Насыщенность",
+  "Hue": "Оттенок",
+  "Reset the picture": "Сбросить изображение",
+  "Double-click a slider to put it back to normal": "Двойной щелчок по ползунку возвращает обычное значение",
 };

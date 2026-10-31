@@ -116,6 +116,11 @@
 /* How it goes on: one button that cycles; "1" on the repeat icon = this video */
 /* (the play mode button is a toggle like Highlights: the same "on" look) */
 .kb-pmenu-opt .kb-ic, .kb-pmenu-opt i { flex: none; width: 14px; height: 14px; }
+/* Picture sliders (brightness, contrast, saturation, hue): a filter on the video, the menu is not filtered */
+.kb-player.has-pfx .kb-screen > :is(video, canvas) { filter: var(--pfx); }
+.kb-pfx-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0 8px; padding: 3px 8px 5px; color: var(--text-2); font: 500 12.5px/1.2 var(--f-label); }
+.kb-pfx-row output { color: var(--faint); font-variant-numeric: tabular-nums; }
+.kb-pfx-row input { grid-column: 1 / -1; width: 100%; margin: 2px 0 0; accent-color: var(--pink); }
 .kb-pmenu-speeds { display: flex; flex-wrap: wrap; gap: 4px; padding: 2px 6px 4px; }
 .kb-pmenu-speeds .kb-chip { cursor: pointer; }
 .kb-pmenu-speeds .kb-chip.is-on { color: var(--ink); background: var(--pink); }

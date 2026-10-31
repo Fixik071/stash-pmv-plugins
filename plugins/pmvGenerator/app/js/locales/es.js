@@ -2606,4 +2606,8 @@ export default {
   "Show hidden folders on the Folders page": "Mostrar las carpetas ocultas en la página Carpetas",
   "Shown on all pages again.": "Se vuelve a mostrar en todas las páginas.",
   "What lies in a hidden folder shows up on no page – only when you open the folder itself. Hide a folder on its page (Folders → open it → “Hide this folder”). Numbers such as the scene count of a performer or tag may still include it.": "Lo que hay en una carpeta oculta no aparece en ninguna página; solo al abrir la propia carpeta. Oculta una carpeta en su página (Carpetas → ábrela → «Ocultar esta carpeta»). Los números, como la cantidad de escenas de una intérprete o etiqueta, pueden seguir incluyéndola.",
+  "Saturation": "Saturación",
+  "Hue": "Tono",
+  "Reset the picture": "Restablecer la imagen",
+  "Double-click a slider to put it back to normal": "Haz doble clic en un control deslizante para volver a lo normal",
 };

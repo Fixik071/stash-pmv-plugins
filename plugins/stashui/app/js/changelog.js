@@ -7,6 +7,13 @@
 
 export const CHANGES = [
   {
+    v: "3.133.0",
+    date: "2026-10-31",
+    items: [
+      ["ui", "New: picture sliders in the player. The gear menu has a “Picture” section with brightness, contrast, saturation and hue – double-click a slider to put it back, “Reset the picture” resets all. It is kept for every video in this browser and only changes how the picture is shown. Only tested against a mock Stash.", "新：播放器画面滑块。齿轮菜单中新增“画面”部分，可调节亮度、对比度、饱和度和色相——双击滑块可恢复默认，“重置画面”会全部还原。该设置对此浏览器中的所有视频生效，只改变画面显示方式。仅在模拟 Stash 上测试过。", "scene/@scene::[data-menubtn]"],
+    ],
+  },
+  {
     v: "3.132.2",
     date: "2026-10-31",
     items: [
