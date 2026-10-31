@@ -205,7 +205,9 @@ function isDownloadOf(path, id) {
 }
 // The scene whose FILE is this download – not just the first hit of the path search (it could be another video).
 async function sceneOf(g) {
-  const f = { path: { value: `${g.user} - ${g.id}`, modifier: "INCLUDES" } };
+  // (Stash's INCLUDES matches ANY word of the value – "user - id" matched nearly every file with a dash in its path. A regex for a
+  // file name that ends with the id, after a separator, finds just this download.)
+  const f = { path: { value: "(?i)(^|[\\\\/ _-])" + String(g.id).replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\.[^\\\\/.]+$", modifier: "MATCHES_REGEX" } };
   let hits;
   try { hits = (await gql(SCENE_Q, { f })).findScenes.scenes; } catch (e) { hits = (await gql(SCENE_Q_OLD, { f })).findScenes.scenes; }
   return (hits || []).find((s) => (s.files ? s.files.map((x) => x.path) : [s.path]).some((p) => isDownloadOf(p, g.id))) || null;

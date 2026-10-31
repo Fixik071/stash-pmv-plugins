@@ -466,7 +466,9 @@ class MetaFiller:
     def scene(self, job):
         """The scene whose FILE is this download – never just the first hit of the path search (a library with several
         folders could hand back another video). None = not scanned yet."""
-        f = {"path": {"value": f"{job['user']} - {job['id']}", "modifier": "INCLUDES"}}
+        # (Stash's INCLUDES matches ANY word of the value – "user - id" matched nearly every file with a dash in its path. A regex for a
+        # file name that ends with the id, after a separator, finds just this download.)
+        f = {"path": {"value": "(?i)(^|[\\\\/ _-])" + re.escape(str(job["id"])) + r"\.[^\\/.]+$", "modifier": "MATCHES_REGEX"}}
         q = "query($f: SceneFilterType) { findScenes(scene_filter: $f, filter: { per_page: 20 }) { scenes { id tags { id } performers { id } %s } } }"
         try:
             hits = stash_gql(self.conn, q % "files { path }", {"f": f})["findScenes"]["scenes"] or []
