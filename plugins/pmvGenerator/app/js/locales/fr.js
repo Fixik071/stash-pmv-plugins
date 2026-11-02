@@ -2619,4 +2619,8 @@ export default {
   "The video was replaced": "La vidéo a été remplacée",
   "This kind of file can only be shortened (“Fast”), not cropped.": "Ce type de fichier ne peut qu'être raccourci (« Rapide »), pas rogné.",
   "{name} will be replaced by the new version, {d} long.": "{name} sera remplacé par la nouvelle version, d'une durée de {d}.",
+  "Rotate": "Rotation",
+  "Straight": "Droit",
+  "Turn the video to the left (Shift+T)": "Tourner la vidéo vers la gauche (Maj+T)",
+  "Turn the video to the right (T)": "Tourner la vidéo vers la droite (T)",
 };

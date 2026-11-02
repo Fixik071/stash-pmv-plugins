@@ -2712,4 +2712,8 @@ export default {
   "The video was replaced": "Відео замінено",
   "This kind of file can only be shortened (“Fast”), not cropped.": "Файл цього типу можна лише скоротити («Швидко»), але не обрізати кадр.",
   "{name} will be replaced by the new version, {d} long.": "{name} буде замінено новою версією тривалістю {d}.",
+  "Rotate": "Повернути",
+  "Straight": "Прямо",
+  "Turn the video to the left (Shift+T)": "Повернути відео вліво (Shift+T)",
+  "Turn the video to the right (T)": "Повернути відео вправо (T)",
 };

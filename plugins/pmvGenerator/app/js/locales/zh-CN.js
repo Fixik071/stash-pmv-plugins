@@ -2736,4 +2736,8 @@ export default {
   "The video was replaced": "视频已替换",
   "This kind of file can only be shortened (“Fast”), not cropped.": "此类文件只能缩短（“快速”），不能裁剪画面。",
   "{name} will be replaced by the new version, {d} long.": "{name} 将被新版本替换，时长 {d}。",
+  "Rotate": "旋转",
+  "Straight": "还原",
+  "Turn the video to the left (Shift+T)": "向左旋转视频（Shift+T）",
+  "Turn the video to the right (T)": "向右旋转视频（T）",
 };

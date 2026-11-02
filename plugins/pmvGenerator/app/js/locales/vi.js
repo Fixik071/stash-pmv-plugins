@@ -2672,4 +2672,8 @@ export default {
   "The video was replaced": "Đã thay thế video",
   "This kind of file can only be shortened (“Fast”), not cropped.": "Loại tệp này chỉ có thể rút ngắn (“Nhanh”), không thể cắt hình.",
   "{name} will be replaced by the new version, {d} long.": "{name} sẽ được thay bằng phiên bản mới, dài {d}.",
+  "Rotate": "Xoay",
+  "Straight": "Thẳng",
+  "Turn the video to the left (Shift+T)": "Xoay video sang trái (Shift+T)",
+  "Turn the video to the right (T)": "Xoay video sang phải (T)",
 };

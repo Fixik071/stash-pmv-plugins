@@ -2679,4 +2679,8 @@ export default {
   "The video was replaced": "動画を置き換えました",
   "This kind of file can only be shortened (“Fast”), not cropped.": "この種類のファイルは短くすることだけができ（「高速」）、切り取りはできません。",
   "{name} will be replaced by the new version, {d} long.": "{name} は新しいバージョン（長さ {d}）で置き換えられます。",
+  "Rotate": "回転",
+  "Straight": "元に戻す",
+  "Turn the video to the left (Shift+T)": "動画を左に回す（Shift+T）",
+  "Turn the video to the right (T)": "動画を右に回す（T）",
 };

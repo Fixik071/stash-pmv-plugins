@@ -308,6 +308,33 @@ export async function render(host, params, query = {}) {
     stage.style.setProperty("--pfx", pfxFilter(prefs));
     pfxPage(prefs);
   }
+  // Rotate: 90° steps, remembered per scene. A CSS transform on the video; the scale makes the turned picture fill the screen as well as it can
+  const rotSaved = store.get("rotScenes", {});
+  let rot = Number(rotSaved[x.id]) || 0;
+  function fitRot() {
+    const screen = $(".kb-screen");
+    const W = screen.clientWidth, H = screen.clientHeight, vw = v.videoWidth, vh = v.videoHeight;
+    let s = 1;
+    if (rot % 180 && W && H && vw && vh) s = Math.min(W / vh, H / vw) / Math.min(W / vw, H / vh); // (turned picture) / (picture as it is now)
+    else if (rot % 180 && W && H) s = Math.min(W / H, H / W);
+    stage.style.setProperty("--rot", rot + "deg");
+    stage.style.setProperty("--rot-s", String(+s.toFixed(4)));
+    stage.classList.toggle("has-rot", !!rot && !(vr && vr.mode));
+  }
+  function setRot(deg) {
+    rot = ((deg % 360) + 360) % 360;
+    const all = store.get("rotScenes", {});
+    if (rot) all[x.id] = rot;
+    else delete all[x.id];
+    store.set("rotScenes", all);
+    fitRot();
+  }
+  v.addEventListener("loadedmetadata", fitRot);
+  if (window.ResizeObserver) {
+    const ro = new ResizeObserver(fitRot);
+    ro.observe($(".kb-screen"));
+    stage._rotRO = ro;
+  }
   // Menu: quality, subtitles, speed (one button instead of three – the bar is full enough)
   function menuHtml() {
     const q = [[0, t("Original (direct)")], ...streams.map((s) => [sources.indexOf(s.url), s.label])];
@@ -320,6 +347,7 @@ export async function render(host, params, query = {}) {
       (slowmoSupported() ? `<b title="${esc(t("Below 1× the missing pictures in between are made up on your graphics card – nothing to download"))}">${t("Smooth slow motion")}</b><div class="kb-pmenu-speeds">${[["off", "Off", ""], ["blend", "Blend", "Cross-fades the pictures – cheap, moving things leave a ghost"], ["motion", "Motion", "Follows the movement of the picture (uses the graphics card)"]].map(([m, l, h]) => `<button type="button" class="kb-chip${smoothMode() === m ? " is-on" : ""}" data-smooth="${m}"${h ? ` title="${esc(t(h))}"` : ""}>${t(l)}</button>`).join("")}</div>` : "") + `</div>` +
       `<div class="kb-pmenu-sec kb-pfx"><b>${t("Picture")}</b>${PFX_ROWS.map(([k, label, lo, hi, unit]) => `<label class="kb-pfx-row" title="${esc(t("Double-click a slider to put it back to normal"))}"><span>${t(label)}</span><output data-pfxv="${k}">${pfxOf()[k]}${unit}</output><input type="range" data-pfx="${k}" min="${lo}" max="${hi}" step="1" value="${pfxOf()[k]}"></label>`).join("")}` +
       `<button type="button" class="kb-pmenu-opt${pfxFlat() ? " is-disabled" : ""}" data-pfxreset>${icon("replay")}${t("Reset the picture")}</button></div>` +
+      `<div class="kb-pmenu-sec"><b>${t("Rotate")}</b><div class="kb-pmenu-speeds"><button type="button" class="kb-chip" data-rot="-90" title="${esc(t("Turn the video to the left (Shift+T)"))}">↺ 90°</button><button type="button" class="kb-chip" data-rot="90" title="${esc(t("Turn the video to the right (T)"))}">↻ 90°</button><button type="button" class="kb-chip${rot ? "" : " is-on"}" data-rot="0">${t("Straight")}</button></div></div>` +
       `<div class="kb-pmenu-sec"><button type="button" class="kb-pmenu-opt${prefs.fromStart ? " is-on" : ""}" data-fromstart title="${esc(t("Scenes you stopped halfway begin at 0:00 instead of where you left off. The saved point stays in Stash; the hint offers it as a button."))}">${prefs.fromStart ? icon("check") : "<i></i>"}${t("Always start from the beginning")}</button>` +
       `<button type="button" class="kb-pmenu-opt${prefs.randomStart ? " is-on" : ""}" data-randstart title="${esc(t("Every scene starts somewhere in the middle – for browsing around. Your resume points in Stash stay as they are."))}">${prefs.randomStart ? icon("check") : "<i></i>"}${t("Start at a random spot")}</button>` +
       `<button type="button" class="kb-pmenu-opt${loop && loop.b != null ? " is-on" : ""}" data-loop>${loop && loop.b != null ? icon("check") : "<i></i>"}${loop ? (loop.b == null ? t("A–B loop: set B here (L)") : t("A–B loop on – clear (L)")) : t("A–B loop: set A here (L)")}</button>` +
@@ -349,6 +377,7 @@ export async function render(host, params, query = {}) {
   const stopGlow = videoGlow(stage, v);
   const vrSaved = store.get("vrScenes", {});
   if (vr) vr.setMode(x.id in vrSaved ? vrSaved[x.id] : guessVR(f.basename, x.tags));
+  fitRot();
   const menu = $("[data-menu]");
   const closeMenu = () => (menu.hidden = true);
   const onDocDown = (e) => {
@@ -394,6 +423,7 @@ export async function render(host, params, query = {}) {
       savePrefs();
     } else if (b.dataset.vr != null) {
       vr.setMode(b.dataset.vr);
+      fitRot();
       store.set("vrScenes", Object.assign(store.get("vrScenes", {}), { [x.id]: b.dataset.vr }));
     } else if (b.dataset.cast != null) return cast();
     else if (b.dataset.fromstart != null) {
@@ -413,6 +443,9 @@ export async function render(host, params, query = {}) {
       prefs.slowSmooth = b.dataset.smooth;
       savePrefs();
       slow.update();
+    } else if (b.dataset.rot != null) {
+      const d = Number(b.dataset.rot);
+      setRot(d === 0 ? 0 : rot + d);
     } else if (b.dataset.pfxreset != null) {
       delete prefs.pfx;
       savePrefs();
@@ -1919,6 +1952,7 @@ export async function render(host, params, query = {}) {
     else if (k === "x") toMini();
     else if (k === "b") addMarker();
     else if (k === "l") toggleLoop();
+    else if (k === "t") (setRot(rot + (e.shiftKey ? -90 : 90)), paintMenu(), flash(rot ? "↻ " + rot + "°" : "↻ 0°"));
     else if (k === "e") host.querySelector("[data-edit]") && host.querySelector("[data-edit]").click(); // edit
     else if (k === "r") host.querySelector("[data-advrate]") && host.querySelector("[data-advrate]").click(); // the detailed rating
     else if (k === "delete") host.querySelector("[data-delete]") && host.querySelector("[data-delete]").click(); // asks first
@@ -1956,6 +1990,7 @@ export async function render(host, params, query = {}) {
       saveCover(x.id);
     }
     oplay.destroy();
+    if (stage._rotRO) stage._rotRO.disconnect();
     if (infoSlots) infoSlots.destroy();
     if (menuSlots) menuSlots.destroy();
     document.removeEventListener("keydown", onKey);

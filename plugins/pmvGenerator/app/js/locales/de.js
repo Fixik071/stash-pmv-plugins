@@ -2633,4 +2633,8 @@ export default {
   "The video was replaced": "Das Video wurde ersetzt",
   "This kind of file can only be shortened (“Fast”), not cropped.": "Diese Dateiart lässt sich nur kürzen („Schnell“), nicht zuschneiden.",
   "{name} will be replaced by the new version, {d} long.": "{name} wird durch die neue Version ersetzt, {d} lang.",
+  "Rotate": "Drehen",
+  "Straight": "Gerade",
+  "Turn the video to the left (Shift+T)": "Video nach links drehen (Umschalt+T)",
+  "Turn the video to the right (T)": "Video nach rechts drehen (T)",
 };

@@ -7,6 +7,13 @@
 
 export const CHANGES = [
   {
+    v: "3.137.0",
+    date: "2026-11-02",
+    items: [
+      ["ui", "New: turn the video. The gear menu in the player has a “Rotate” section (↺ 90°, ↻ 90°, Straight), and the T key turns it to the right (Shift+T to the left). The turned picture fills the screen as well as it can, and it is remembered for that scene. It only changes how the video is shown – the file stays as it is. Only tested against a mock Stash.", "新：旋转视频。播放器的齿轮菜单中新增“旋转”部分（↺ 90°、↻ 90°、还原），按 T 键向右旋转（Shift+T 向左）。旋转后的画面会尽量铺满屏幕，并按场景记住。这只改变视频的显示方式，文件本身不变。仅在模拟 Stash 上测试过。", "scene/@scene::[data-menubtn]"],
+    ],
+  },
+  {
     v: "3.136.2",
     date: "2026-10-31",
     items: [

@@ -124,6 +124,9 @@
 .kb-pmenu-opt .kb-ic, .kb-pmenu-opt i { flex: none; width: 14px; height: 14px; }
 /* Picture sliders (brightness, contrast, saturation, hue): a filter on the video, the menu is not filtered */
 .kb-player.has-pfx .kb-screen > :is(video, canvas) { filter: var(--pfx); }
+/* Rotate (gear menu): the scale (--rot-s) is worked out in player.js so that the turned picture fills the screen */
+.kb-player.has-rot .kb-screen { background: #000; }
+.kb-player.has-rot .kb-screen > :is(video, canvas) { transform: rotate(var(--rot)) scale(var(--rot-s, 1)); }
 .kb-pfx-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0 8px; padding: 3px 8px 5px; color: var(--text-2); font: 500 12.5px/1.2 var(--f-label); }
 .kb-pfx-row output { color: var(--faint); font-variant-numeric: tabular-nums; }
 .kb-pfx-row input { grid-column: 1 / -1; width: 100%; margin: 2px 0 0; accent-color: var(--pink); }
