@@ -612,3 +612,11 @@ html.kb-glass .kb-mkc-badge { background: color-mix(in srgb, var(--violet) 26%, 
 .kb-hrow-name small { display: block; overflow: hidden; color: var(--faint); font: 400 12.5px/1.3 var(--f-label); text-overflow: ellipsis; white-space: nowrap; }
 .kb-hrow .kb-set-btns { display: flex; flex: none; align-items: center; gap: 8px; }
 html.kb-glass .kb-hrow { background: linear-gradient(135deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .03)); border-color: rgba(255, 255, 255, .14); }
+
+/* Clips from markers: filters above the list (performer / tag / video / words) */
+.kb-mkc-filter { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 4px; }
+.kb-mkc-filter .kb-field { flex: 1 1 150px; min-width: 0; }
+.kb-mkc-filter .kb-field[hidden] { display: none; }
+.kb-mkc-filter [data-fq] { flex: 2 1 220px; }
+.kb-mkc-fnote { margin: 4px 0 0; }
+.kb-mkc-row[hidden] { display: none !important; }

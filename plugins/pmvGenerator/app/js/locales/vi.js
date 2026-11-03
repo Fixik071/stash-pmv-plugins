@@ -2700,4 +2700,11 @@ export default {
   "…and put everything from all the videos into ONE video (always Exact, the same size for all)": "…và ghép mọi thứ từ tất cả các video thành MỘT video (luôn ở chế độ Chính xác, cùng kích thước)",
   "Putting everything together … {n} %": "Đang ghép lại … {n} %",
   "Marker clips": "Clip từ dấu mốc",
+  "Search markers, tags, videos …": "Tìm dấu mốc, thẻ, video …",
+  "Performer: any": "Diễn viên: tất cả",
+  "Marker tag: any": "Thẻ dấu mốc: tất cả",
+  "Video: any": "Video: tất cả",
+  "Marker tag": "Thẻ dấu mốc",
+  "{n} of {all} markers shown, {e} with an end": "Hiện {n} / {all} dấu mốc, {e} có điểm kết thúc",
+  "Only the markers that are shown are saved as clips.": "Chỉ những dấu mốc đang hiển thị mới được lưu thành clip.",
 };

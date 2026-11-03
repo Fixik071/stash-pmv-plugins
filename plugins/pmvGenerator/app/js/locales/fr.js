@@ -2647,4 +2647,11 @@ export default {
   "…and put everything from all the videos into ONE video (always Exact, the same size for all)": "…et tout rassembler en UNE seule vidéo, toutes vidéos confondues (toujours en mode Exact, même taille pour tous)",
   "Putting everything together … {n} %": "Assemblage … {n} %",
   "Marker clips": "Clips des marqueurs",
+  "Search markers, tags, videos …": "Chercher marqueurs, tags, vidéos …",
+  "Performer: any": "Interprète : tous",
+  "Marker tag: any": "Tag du marqueur : tous",
+  "Video: any": "Vidéo : toutes",
+  "Marker tag": "Tag du marqueur",
+  "{n} of {all} markers shown, {e} with an end": "{n} marqueurs sur {all} affichés, {e} avec une fin",
+  "Only the markers that are shown are saved as clips.": "Seuls les marqueurs affichés sont enregistrés comme clips.",
 };

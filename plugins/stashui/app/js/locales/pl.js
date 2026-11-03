@@ -2705,4 +2705,11 @@ export default {
   "…and put everything from all the videos into ONE video (always Exact, the same size for all)": "…i połącz wszystko ze wszystkich filmów w JEDEN film (zawsze tryb Dokładny, ten sam rozmiar dla wszystkich)",
   "Putting everything together … {n} %": "Łączenie … {n} %",
   "Marker clips": "Klipy ze znaczników",
+  "Search markers, tags, videos …": "Szukaj znaczników, tagów, filmów …",
+  "Performer: any": "Wykonawca: wszyscy",
+  "Marker tag: any": "Tag znacznika: wszystkie",
+  "Video: any": "Film: wszystkie",
+  "Marker tag": "Tag znacznika",
+  "{n} of {all} markers shown, {e} with an end": "Pokazano {n} z {all} znaczników, {e} z końcem",
+  "Only the markers that are shown are saved as clips.": "Tylko pokazane znaczniki zostaną zapisane jako klipy.",
 };

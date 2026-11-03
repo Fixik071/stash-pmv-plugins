@@ -2764,4 +2764,11 @@ export default {
   "…and put everything from all the videos into ONE video (always Exact, the same size for all)": "……并把所有视频里的内容合并成一个视频（始终为“精确”，所有片段尺寸相同）",
   "Putting everything together … {n} %": "正在合并 … {n} %",
   "Marker clips": "标记片段",
+  "Search markers, tags, videos …": "搜索标记、标签、视频 …",
+  "Performer: any": "演员：全部",
+  "Marker tag: any": "标记标签：全部",
+  "Video: any": "视频：全部",
+  "Marker tag": "标记标签",
+  "{n} of {all} markers shown, {e} with an end": "显示 {n} / {all} 个标记，其中 {e} 个有结束时间",
+  "Only the markers that are shown are saved as clips.": "只有显示出来的标记会被保存为片段。",
 };

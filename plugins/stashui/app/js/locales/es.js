@@ -2683,4 +2683,11 @@ export default {
   "…and put everything from all the videos into ONE video (always Exact, the same size for all)": "…y juntar todo lo de todos los vídeos en UN solo vídeo (siempre en modo Exacto, mismo tamaño para todos)",
   "Putting everything together … {n} %": "Juntándolo todo … {n} %",
   "Marker clips": "Clips de marcadores",
+  "Search markers, tags, videos …": "Buscar marcadores, etiquetas, vídeos …",
+  "Performer: any": "Artista: todos",
+  "Marker tag: any": "Etiqueta del marcador: todas",
+  "Video: any": "Vídeo: todos",
+  "Marker tag": "Etiqueta del marcador",
+  "{n} of {all} markers shown, {e} with an end": "{n} de {all} marcadores mostrados, {e} con final",
+  "Only the markers that are shown are saved as clips.": "Solo los marcadores que se muestran se guardan como clips.",
 };

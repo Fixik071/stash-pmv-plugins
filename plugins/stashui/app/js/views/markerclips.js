@@ -12,8 +12,8 @@ import { parseTime } from "../audiox.js";
 import { fmt, intoStash } from "./clipcut.js";
 
 const Q = `query($f: FindFilterType, $m: SceneMarkerFilterType) { findSceneMarkers(filter: $f, scene_marker_filter: $m) { count scene_markers {
-  id title seconds end_seconds primary_tag { id name } tags { id }
-  scene { id title files { basename duration width height } performers { id } tags { id } studio { id } } } } }`;
+  id title seconds end_seconds primary_tag { id name } tags { id name }
+  scene { id title files { basename duration width height } performers { id name } tags { id } studio { id } } } } }`;
 const MAX = 1500;
 
 async function loadMarkers({ q, tags, sceneId }) {
@@ -51,6 +51,13 @@ export async function openMarkerClips({ q = "", tags = [], sceneId = null } = {}
         <label class="kb-cut-opt kb-mkc-sub"><input type="checkbox" data-stop${o.stop ? " checked" : ""}><span>${t("…but stop at the next marker of the same video")}</span></label>
         <label class="kb-cut-opt"><input type="radio" name="kb-mkc-mode" value="skip" data-mode${o.mode === "skip" ? " checked" : ""}><span>${t("Leave out markers without an end")}</span></label>
       </div>
+      <div class="kb-mkc-filter" data-filters hidden>
+        <input class="kb-field" type="search" data-fq placeholder="${esc(t("Search markers, tags, videos …"))}" aria-label="${esc(t("Search markers, tags, videos …"))}">
+        <select class="kb-field" data-fperf aria-label="${esc(t("Performer"))}"></select>
+        <select class="kb-field" data-ftag aria-label="${esc(t("Marker tag"))}"></select>
+        <select class="kb-field" data-fscene aria-label="${esc(t("Video"))}"></select>
+      </div>
+      <p class="kb-hint kb-mkc-fnote" data-fnote hidden>${t("Only the markers that are shown are saved as clips.")}</p>
       <div class="kb-mkc-pick"><span class="kb-hint" data-sum></span><span class="kb-spacer"></span>
         <button type="button" class="kb-btn is-ghost" data-sel="all">${t("Select all")}</button>
         <button type="button" class="kb-btn is-ghost" data-sel="end">${t("Only those with an end")}</button>
@@ -95,14 +102,29 @@ export async function openMarkerClips({ q = "", tags = [], sceneId = null } = {}
       }
     });
   }
-  const used = (r) => r.end != null && r.end > r.m.seconds && !r.off;
+  // What the filters let through (a marker that is filtered out is not saved, whatever its tick says)
+  const fl = { q: "", perf: "", tag: "", scene: "" };
+  const matches = (r) => {
+    const m = r.m;
+    if (fl.perf && !(m.scene.performers || []).some((p) => p.id === fl.perf)) return false;
+    if (fl.tag && !(m.primary_tag && m.primary_tag.id === fl.tag) && !(m.tags || []).some((g) => g.id === fl.tag)) return false;
+    if (fl.scene && String(m.scene.id) !== fl.scene) return false;
+    if (fl.q) {
+      const hay = [m.title, m.primary_tag && m.primary_tag.name, ...(m.tags || []).map((g) => g.name), m.scene.title, ((m.scene.files || [])[0] || {}).basename].filter(Boolean).join(" ").toLowerCase();
+      if (!fl.q.split(/\s+/).every((w) => hay.includes(w))) return false;
+    }
+    return true;
+  };
+  const used = (r) => r.end != null && r.end > r.m.seconds && !r.off && !r.hide;
 
   function paintVals() {
     recompute();
     let n = 0;
     let secs = 0;
     rows.forEach((r, i) => {
+      r.hide = !matches(r);
       const row = r.el;
+      row.hidden = r.hide;
       const on = used(r);
       if (on) (n++, (secs += r.end - r.m.seconds));
       row.classList.toggle("is-none", r.end == null);
@@ -113,8 +135,10 @@ export async function openMarkerClips({ q = "", tags = [], sceneId = null } = {}
       row.querySelector("[data-len]").textContent = r.end == null ? t("no end") : fmt(r.end - r.m.seconds);
       row.querySelector(".kb-mkc-badge").hidden = r.real || r.manual;
     });
-    const ends = rows.filter((r) => r.real).length;
-    $("[data-sum]").textContent = rows.length ? t("{n} markers, {e} with an end", { n: rows.length, e: ends }) : "";
+    const shown = rows.filter((r) => !r.hide);
+    const ends = shown.filter((r) => r.real).length;
+    $("[data-sum]").textContent = !rows.length ? "" : shown.length < rows.length ? t("{n} of {all} markers shown, {e} with an end", { n: shown.length, all: rows.length, e: ends }) : t("{n} markers, {e} with an end", { n: rows.length, e: ends });
+    $("[data-fnote]").hidden = shown.length === rows.length;
     $("[data-total]").textContent = n ? t("{n} clips, {d} in total", { n, d: fmt(secs) }) : "";
     $("[data-save]").disabled = busy || !n;
   }
@@ -164,10 +188,31 @@ export async function openMarkerClips({ q = "", tags = [], sceneId = null } = {}
   el.querySelectorAll("[data-sel]").forEach(
     (b) =>
       (b.onclick = () => {
-        rows.forEach((r) => (r.off = b.dataset.sel === "none" || (b.dataset.sel === "end" && !r.real)));
+        rows.forEach((r) => !r.hide && (r.off = b.dataset.sel === "none" || (b.dataset.sel === "end" && !r.real)));
         paintVals();
       })
   );
+  // ---- filters: what the markers are about (performer / tag / video / words) – filled from the markers that were loaded
+  function paintFilters() {
+    const count = (get) => {
+      const mp = new Map();
+      rows.forEach((r) => get(r).forEach((v) => v && v.id && (mp.has(String(v.id)) ? (mp.get(String(v.id)).n += 1) : mp.set(String(v.id), { name: v.name, n: 1 }))));
+      return [...mp.entries()].sort((a, b) => b[1].n - a[1].n || String(a[1].name).localeCompare(String(b[1].name)));
+    };
+    const fill = (sel, any, list) => {
+      sel.innerHTML = `<option value="">${esc(any)}</option>` + list.map(([id, v]) => `<option value="${esc(id)}">${esc(v.name)} (${v.n})</option>`).join("");
+      sel.hidden = list.length < 2;
+    };
+    fill($("[data-fperf]"), t("Performer: any"), count((r) => r.m.scene.performers || []));
+    fill($("[data-ftag]"), t("Marker tag: any"), count((r) => [r.m.primary_tag, ...(r.m.tags || [])].filter((v, i, a) => v && a.findIndex((x) => x && x.id === v.id) === i)));
+    fill($("[data-fscene]"), t("Video: any"), count((r) => [{ id: r.m.scene.id, name: r.m.scene.title || ((r.m.scene.files || [])[0] || {}).basename || "#" + r.m.scene.id }]));
+    $("[data-filters]").hidden = rows.length < 2;
+  }
+  $("[data-fq]").oninput = (e) => ((fl.q = e.target.value.trim().toLowerCase()), paintVals());
+  $("[data-fperf]").onchange = (e) => ((fl.perf = e.target.value), paintVals());
+  $("[data-ftag]").onchange = (e) => ((fl.tag = e.target.value), paintVals());
+  $("[data-fscene]").onchange = (e) => ((fl.scene = e.target.value), paintVals());
+
   $("[data-list]").addEventListener("change", (e) => {
     const row = e.target.closest("[data-i]");
     if (!row) return;
@@ -320,6 +365,7 @@ export async function openMarkerClips({ q = "", tags = [], sceneId = null } = {}
   try {
     const { markers, capped } = await loadMarkers({ q, tags, sceneId });
     rows = markers.map((m) => ({ m, dur: ((m.scene.files || [])[0] || {}).duration || 0, end: null, real: false, off: false, manual: false }));
+    paintFilters();
     paintList(capped);
   } catch (err) {
     $("[data-list]").innerHTML = `<div class="kb-empty"><b>${t("Couldn't load the markers")}</b><p>${esc(err.message)}</p></div>`;

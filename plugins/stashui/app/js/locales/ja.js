@@ -2707,4 +2707,11 @@ export default {
   "…and put everything from all the videos into ONE video (always Exact, the same size for all)": "…さらに、すべての動画の分を1本の動画にまとめる（常に「正確」、全部同じサイズ）",
   "Putting everything together … {n} %": "まとめています … {n} %",
   "Marker clips": "マーカーのクリップ",
+  "Search markers, tags, videos …": "マーカー・タグ・動画を検索 …",
+  "Performer: any": "パフォーマー：すべて",
+  "Marker tag: any": "マーカーのタグ：すべて",
+  "Video: any": "動画：すべて",
+  "Marker tag": "マーカーのタグ",
+  "{n} of {all} markers shown, {e} with an end": "{all} 個中 {n} 個のマーカーを表示、終了あり {e} 個",
+  "Only the markers that are shown are saved as clips.": "表示されているマーカーだけがクリップとして保存されます。",
 };

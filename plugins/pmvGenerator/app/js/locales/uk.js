@@ -2740,4 +2740,11 @@ export default {
   "…and put everything from all the videos into ONE video (always Exact, the same size for all)": "…і об'єднати все з усіх відео в ОДНЕ відео (завжди «Точно», один розмір для всіх)",
   "Putting everything together … {n} %": "Об'єдную … {n} %",
   "Marker clips": "Кліпи з маркерів",
+  "Search markers, tags, videos …": "Пошук за маркерами, тегами, відео …",
+  "Performer: any": "Виконавець: будь-який",
+  "Marker tag: any": "Тег маркера: будь-який",
+  "Video: any": "Відео: будь-яке",
+  "Marker tag": "Тег маркера",
+  "{n} of {all} markers shown, {e} with an end": "Показано {n} з {all} маркерів, {e} з кінцем",
+  "Only the markers that are shown are saved as clips.": "Зберігаються як кліпи лише показані маркери.",
 };

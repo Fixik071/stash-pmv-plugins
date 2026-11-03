@@ -7,6 +7,13 @@
 
 export const CHANGES = [
   {
+    v: "3.138.2",
+    date: "2026-11-03",
+    items: [
+      ["ui", "Clips from markers: pick the markers faster. Above the list there are filters for the performer, the marker tag, the video and a search field (words in the marker, its tags or the video's name). Only the markers that are shown are saved, and “Select all / Only those with an end / Select none” act on what is shown – so “performer X” + “Select all” is enough.", "标记转片段：更快地挑选标记。列表上方有演员、标记标签、视频的筛选和一个搜索框（匹配标记名称、标签或视频名称）。只有显示出来的标记会被保存，“全选 / 只选有结束的 / 全不选”也只作用于显示出来的标记——选好“演员 X”再点“全选”即可。", "markers::[data-mkclips]"],
+    ],
+  },
+  {
     v: "3.138.1",
     date: "2026-11-03",
     items: [
