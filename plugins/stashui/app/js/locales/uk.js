@@ -2747,4 +2747,5 @@ export default {
   "Marker tag": "Тег маркера",
   "{n} of {all} markers shown, {e} with an end": "Показано {n} з {all} маркерів, {e} з кінцем",
   "Only the markers that are shown are saved as clips.": "Зберігаються як кліпи лише показані маркери.",
+  "Mix the clips in a random order": "Перемішати кліпи у випадковому порядку",
 };

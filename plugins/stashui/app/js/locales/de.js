@@ -2668,4 +2668,5 @@ export default {
   "Marker tag": "Marker-Tag",
   "{n} of {all} markers shown, {e} with an end": "{n} von {all} Markern angezeigt, {e} mit Ende",
   "Only the markers that are shown are saved as clips.": "Nur die angezeigten Marker werden als Clips gespeichert.",
+  "Mix the clips in a random order": "Clips in zufälliger Reihenfolge mischen",
 };

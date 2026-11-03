@@ -2690,4 +2690,5 @@ export default {
   "Marker tag": "Etiqueta del marcador",
   "{n} of {all} markers shown, {e} with an end": "{n} de {all} marcadores mostrados, {e} con final",
   "Only the markers that are shown are saved as clips.": "Solo los marcadores que se muestran se guardan como clips.",
+  "Mix the clips in a random order": "Mezclar los clips en orden aleatorio",
 };

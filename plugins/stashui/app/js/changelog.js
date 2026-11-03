@@ -7,6 +7,13 @@
 
 export const CHANGES = [
   {
+    v: "3.138.3",
+    date: "2026-11-03",
+    items: [
+      ["ui", "Clips from markers: “Mix the clips in a random order” (with “…put everything into ONE video”). The clips of the one video come in a new random order every time instead of the order of the list.", "标记转片段：新增“把片段按随机顺序混合”（配合“……合并成一个视频”）。合成的视频里片段每次都按新的随机顺序排列，而不是按列表顺序。", "markers::[data-mkclips]"],
+    ],
+  },
+  {
     v: "3.138.2",
     date: "2026-11-03",
     items: [

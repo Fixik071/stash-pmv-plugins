@@ -2714,4 +2714,5 @@ export default {
   "Marker tag": "マーカーのタグ",
   "{n} of {all} markers shown, {e} with an end": "{all} 個中 {n} 個のマーカーを表示、終了あり {e} 個",
   "Only the markers that are shown are saved as clips.": "表示されているマーカーだけがクリップとして保存されます。",
+  "Mix the clips in a random order": "クリップをランダムな順番に混ぜる",
 };

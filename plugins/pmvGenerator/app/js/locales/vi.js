@@ -2707,4 +2707,5 @@ export default {
   "Marker tag": "Thẻ dấu mốc",
   "{n} of {all} markers shown, {e} with an end": "Hiện {n} / {all} dấu mốc, {e} có điểm kết thúc",
   "Only the markers that are shown are saved as clips.": "Chỉ những dấu mốc đang hiển thị mới được lưu thành clip.",
+  "Mix the clips in a random order": "Trộn các clip theo thứ tự ngẫu nhiên",
 };

@@ -2712,4 +2712,5 @@ export default {
   "Marker tag": "Tag znacznika",
   "{n} of {all} markers shown, {e} with an end": "Pokazano {n} z {all} znaczników, {e} z końcem",
   "Only the markers that are shown are saved as clips.": "Tylko pokazane znaczniki zostaną zapisane jako klipy.",
+  "Mix the clips in a random order": "Wymieszaj klipy w losowej kolejności",
 };

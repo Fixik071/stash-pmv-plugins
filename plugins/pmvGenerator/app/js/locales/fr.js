@@ -2654,4 +2654,5 @@ export default {
   "Marker tag": "Tag du marqueur",
   "{n} of {all} markers shown, {e} with an end": "{n} marqueurs sur {all} affichés, {e} avec une fin",
   "Only the markers that are shown are saved as clips.": "Seuls les marqueurs affichés sont enregistrés comme clips.",
+  "Mix the clips in a random order": "Mélanger les clips dans un ordre aléatoire",
 };

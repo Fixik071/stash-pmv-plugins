@@ -2771,4 +2771,5 @@ export default {
   "Marker tag": "标记标签",
   "{n} of {all} markers shown, {e} with an end": "显示 {n} / {all} 个标记，其中 {e} 个有结束时间",
   "Only the markers that are shown are saved as clips.": "只有显示出来的标记会被保存为片段。",
+  "Mix the clips in a random order": "把片段按随机顺序混合",
 };

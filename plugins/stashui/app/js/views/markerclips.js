@@ -68,6 +68,7 @@ export async function openMarkerClips({ q = "", tags = [], sceneId = null } = {}
         <label class="kb-cut-opt"><input type="radio" name="kb-mkc-q" value="precise" data-q${cut.precise ? " checked" : ""}><span><b>${t("Exact")}</b> ${t("– re-encoded (H.264), frame-accurate, takes longer")}</span></label>
         <label class="kb-cut-opt"><input type="checkbox" data-join${cut.join ? " checked" : ""}><span>${t("Join the clips of each video into one")}</span></label>
         <label class="kb-cut-opt kb-mkc-sub"><input type="checkbox" data-joinall${cut.joinAll ? " checked" : ""}><span>${t("…and put everything from all the videos into ONE video (always Exact, the same size for all)")}</span></label>
+        <label class="kb-cut-opt kb-mkc-sub"><input type="checkbox" data-shuffle${cut.shuffle ? " checked" : ""}><span>${t("Mix the clips in a random order")}</span></label>
         <label class="kb-cut-opt"><input type="checkbox" data-sub${cut.folder === "Clips" ? " checked" : ""}><span>${t("Put them in a subfolder “Clips” next to the original")}</span></label>
         <label class="kb-cut-opt"><input type="checkbox" data-meta${cut.meta ? " checked" : ""}><span>${t("Take over performers, tags and studio, and tag them “Clip”")}</span></label>
         <label class="kb-cut-opt kb-mkc-sub"><input type="checkbox" data-mtags${o.mtags ? " checked" : ""}><span>${t("Also give each clip the tags of its marker")}</span></label>
@@ -246,6 +247,16 @@ export async function openMarkerClips({ q = "", tags = [], sceneId = null } = {}
 
   // ONE video from all the picked clips, whichever video they come from: the Editor's backend job (it brings them to the same size and puts
   // them one after the other – in parts when there are many), then the same scan + tags as for the single clips
+  // the order of the clips in the one video: as listed – or mixed (a new random order every time)
+  const order = (list) => {
+    if (!$("[data-shuffle]").checked) return list;
+    const a = list.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  };
   async function saveAll(picked, ox) {
     const f0 = ((picked[0].m.scene.files || [])[0]) || {};
     const even = (n, fb) => {
@@ -260,7 +271,7 @@ export async function openMarkerClips({ q = "", tags = [], sceneId = null } = {}
     try {
       const r = await runBackend({
         mode: "edit_render",
-        items: picked.map((x) => ({ scene_id: x.m.scene.id, start: x.m.seconds, end: x.end, speed: 1 })),
+        items: order(picked).map((x) => ({ scene_id: x.m.scene.id, start: x.m.seconds, end: x.end, speed: 1 })),
         name: t("Marker clips"),
         w: even(f0.width, 1280),
         h: even(f0.height, 720),
@@ -302,6 +313,8 @@ export async function openMarkerClips({ q = "", tags = [], sceneId = null } = {}
   const joinAllBox = $("[data-joinall]");
   const syncJoinAll = () => {
     $("[data-join]").disabled = joinAllBox.checked;
+    $("[data-shuffle]").disabled = !joinAllBox.checked;
+    $("[data-shuffle]").closest("label").classList.toggle("is-off", !joinAllBox.checked);
     el.querySelectorAll("[data-q]").forEach((q) => (q.disabled = joinAllBox.checked));
   };
   joinAllBox.onchange = syncJoinAll;
@@ -310,7 +323,7 @@ export async function openMarkerClips({ q = "", tags = [], sceneId = null } = {}
   async function save() {
     const picked = rows.filter(used);
     if (!picked.length || busy) return;
-    const ox = { precise: $("[data-q][value=precise]").checked, join: $("[data-join]").checked, joinAll: joinAllBox.checked, folder: $("[data-sub]").checked ? "Clips" : "same", meta: metaBox.checked };
+    const ox = { precise: $("[data-q][value=precise]").checked, join: $("[data-join]").checked, joinAll: joinAllBox.checked, shuffle: $("[data-shuffle]").checked, folder: $("[data-sub]").checked ? "Clips" : "same", meta: metaBox.checked };
     store.set("clipOpts", Object.assign(store.get("clipOpts", {}), ox));
     if (ox.joinAll) return saveAll(picked, ox);
     busy = true;
