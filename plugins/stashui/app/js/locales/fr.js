@@ -2644,4 +2644,7 @@ export default {
   "Stash-box link": "Lien stash-box",
   "is linked to": "est lié à",
   "is not linked to": "n'est pas lié à",
+  "…and put everything from all the videos into ONE video (always Exact, the same size for all)": "…et tout rassembler en UNE seule vidéo, toutes vidéos confondues (toujours en mode Exact, même taille pour tous)",
+  "Putting everything together … {n} %": "Assemblage … {n} %",
+  "Marker clips": "Clips des marqueurs",
 };

@@ -60,6 +60,7 @@ export async function openMarkerClips({ q = "", tags = [], sceneId = null } = {}
         <label class="kb-cut-opt"><input type="radio" name="kb-mkc-q" value="fast" data-q${cut.precise ? "" : " checked"}><span><b>${t("Fast")}</b> ${t("– no re-encoding, same quality; the start snaps to the nearest earlier keyframe (can be a second or two off)")}</span></label>
         <label class="kb-cut-opt"><input type="radio" name="kb-mkc-q" value="precise" data-q${cut.precise ? " checked" : ""}><span><b>${t("Exact")}</b> ${t("– re-encoded (H.264), frame-accurate, takes longer")}</span></label>
         <label class="kb-cut-opt"><input type="checkbox" data-join${cut.join ? " checked" : ""}><span>${t("Join the clips of each video into one")}</span></label>
+        <label class="kb-cut-opt kb-mkc-sub"><input type="checkbox" data-joinall${cut.joinAll ? " checked" : ""}><span>${t("…and put everything from all the videos into ONE video (always Exact, the same size for all)")}</span></label>
         <label class="kb-cut-opt"><input type="checkbox" data-sub${cut.folder === "Clips" ? " checked" : ""}><span>${t("Put them in a subfolder “Clips” next to the original")}</span></label>
         <label class="kb-cut-opt"><input type="checkbox" data-meta${cut.meta ? " checked" : ""}><span>${t("Take over performers, tags and studio, and tag them “Clip”")}</span></label>
         <label class="kb-cut-opt kb-mkc-sub"><input type="checkbox" data-mtags${o.mtags ? " checked" : ""}><span>${t("Also give each clip the tags of its marker")}</span></label>
@@ -198,11 +199,75 @@ export async function openMarkerClips({ q = "", tags = [], sceneId = null } = {}
     }
   }
 
+  // ONE video from all the picked clips, whichever video they come from: the Editor's backend job (it brings them to the same size and puts
+  // them one after the other – in parts when there are many), then the same scan + tags as for the single clips
+  async function saveAll(picked, ox) {
+    const f0 = ((picked[0].m.scene.files || [])[0]) || {};
+    const even = (n, fb) => {
+      const v = Math.round(Number(n) || fb);
+      return v - (v % 2);
+    };
+    const btns = el.querySelectorAll(".kb-drawer-foot .kb-btn, .kb-mkc-pick .kb-btn");
+    busy = true;
+    btns.forEach((b) => (b.disabled = true));
+    $("[data-barwrap]").hidden = false;
+    $("[data-bar]").style.width = "3%";
+    try {
+      const r = await runBackend({
+        mode: "edit_render",
+        items: picked.map((x) => ({ scene_id: x.m.scene.id, start: x.m.seconds, end: x.end, speed: 1 })),
+        name: t("Marker clips"),
+        w: even(f0.width, 1280),
+        h: even(f0.height, 720),
+        fps: 30,
+        fade: 0,
+        audio: "keep",
+        folder: ox.folder === "Clips" ? "Clips" : "",
+      });
+      let st;
+      for (;;) {
+        await new Promise((res) => setTimeout(res, 1000));
+        st = await runBackend({ mode: "clip_status", job: r.job });
+        $("[data-bar]").style.width = Math.max(3, st.pct || 0) + "%";
+        $("[data-note]").textContent = t("Putting everything together … {n} %", { n: st.pct || 0 });
+        if (st.state === "done" || st.state === "error") break;
+      }
+      if (st.state === "error") throw new Error(st.error || "ffmpeg failed");
+      $("[data-note]").textContent = t("Saved – Stash is scanning the new video(s) …");
+      const uniq = (list, key) => [...new Map(list.filter(Boolean).map((v) => [v[key], v])).values()];
+      const scenes = uniq(picked.map((x) => x.m.scene), "id");
+      const tagIds = o.mtags ? [...new Set(picked.flatMap((x) => [x.m.primary_tag && x.m.primary_tag.id, ...(x.m.tags || []).map((g) => g.id)]).filter(Boolean))] : [];
+      const studios = uniq(scenes.map((sc) => sc.studio), "id");
+      await intoStash(
+        { performers: uniq(scenes.flatMap((sc) => sc.performers || []), "id"), tags: uniq(scenes.flatMap((sc) => sc.tags || []), "id"), studio: studios.length === 1 ? studios[0] : null },
+        st.files,
+        ox,
+        [{ tagIds }]
+      );
+      toast(t("{n} new video(s) saved and added to Stash", { n: 1 }), "ok");
+    } catch (err) {
+      errorToast(err, t("Clips from markers"));
+    }
+    busy = false;
+    $("[data-barwrap]").hidden = true;
+    $("[data-note]").textContent = "";
+    btns.forEach((b) => (b.disabled = false));
+    paintVals();
+  }
+  const joinAllBox = $("[data-joinall]");
+  const syncJoinAll = () => {
+    $("[data-join]").disabled = joinAllBox.checked;
+    el.querySelectorAll("[data-q]").forEach((q) => (q.disabled = joinAllBox.checked));
+  };
+  joinAllBox.onchange = syncJoinAll;
+  syncJoinAll();
+
   async function save() {
     const picked = rows.filter(used);
     if (!picked.length || busy) return;
-    const ox = { precise: $("[data-q][value=precise]").checked, join: $("[data-join]").checked, folder: $("[data-sub]").checked ? "Clips" : "same", meta: metaBox.checked };
+    const ox = { precise: $("[data-q][value=precise]").checked, join: $("[data-join]").checked, joinAll: joinAllBox.checked, folder: $("[data-sub]").checked ? "Clips" : "same", meta: metaBox.checked };
     store.set("clipOpts", Object.assign(store.get("clipOpts", {}), ox));
+    if (ox.joinAll) return saveAll(picked, ox);
     busy = true;
     const btns = el.querySelectorAll(".kb-drawer-foot .kb-btn, .kb-mkc-pick .kb-btn");
     btns.forEach((b) => (b.disabled = true));

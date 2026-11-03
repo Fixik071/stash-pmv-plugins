@@ -2761,4 +2761,7 @@ export default {
   "Stash-box link": "Stash-box 关联",
   "is linked to": "已关联到",
   "is not linked to": "未关联到",
+  "…and put everything from all the videos into ONE video (always Exact, the same size for all)": "……并把所有视频里的内容合并成一个视频（始终为“精确”，所有片段尺寸相同）",
+  "Putting everything together … {n} %": "正在合并 … {n} %",
+  "Marker clips": "标记片段",
 };

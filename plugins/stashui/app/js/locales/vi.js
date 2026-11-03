@@ -2697,4 +2697,7 @@ export default {
   "Stash-box link": "Liên kết stash-box",
   "is linked to": "đã liên kết với",
   "is not linked to": "không liên kết với",
+  "…and put everything from all the videos into ONE video (always Exact, the same size for all)": "…và ghép mọi thứ từ tất cả các video thành MỘT video (luôn ở chế độ Chính xác, cùng kích thước)",
+  "Putting everything together … {n} %": "Đang ghép lại … {n} %",
+  "Marker clips": "Clip từ dấu mốc",
 };

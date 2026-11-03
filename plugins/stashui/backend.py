@@ -1468,8 +1468,8 @@ def edit_render(stash, args):
             raise ValueError("a piece ends before it starts")
         sp = max(0.25, min(4.0, float(c.get("speed") or 1.0)))
         items.append({"path": video, "start": a, "end": b, "speed": sp, "audio": has_audio(ffmpeg, video)})
-    if not items or len(items) > 60:
-        raise ValueError("no pieces (or more than 60)")
+    if not items or len(items) > 600:
+        raise ValueError("no pieces (or more than 600)")
 
     def even(n, lo, hi):
         n = int(float(n or 0))
@@ -1490,6 +1490,9 @@ def edit_render(stash, args):
     return {"job": job}
 
 
+EDIT_CHUNK = 40  # pieces per ffmpeg run – more inputs in one command line would be too long for Windows; longer lists are cut in parts and put together
+
+
 def edit_job(spec_path):
     with open(spec_path, encoding="utf-8") as f:
         spec = json.load(f)
@@ -1503,55 +1506,80 @@ def edit_job(spec_path):
 
     save()
     flags = 0x08000000 if os.name == "nt" else 0
+    leftovers = []
     try:
         items, w, h, fps, fade, keep = spec["items"], spec["w"], spec["h"], spec["fps"], spec["fade"], spec["keep"]
-        cmd = [spec["ffmpeg"], "-hide_banner", "-loglevel", "error", "-y", "-progress", "pipe:1", "-nostats"]
-        fc, total = [], 0.0
-        for i, it in enumerate(items):
-            span, spd = it["end"] - it["start"], it["speed"]
-            out_dur = span / spd
-            total += out_dur
-            cmd += ["-ss", f"{it['start']:.3f}", "-t", f"{span:.3f}", "-i", it["path"]]
-            v = f"[{i}:v:0]scale={w}:{h}:force_original_aspect_ratio=decrease:flags=lanczos,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2:black,setsar=1,fps={fps},format=yuv420p,setpts=PTS-STARTPTS"
-            if spd != 1:
-                v += f",setpts=PTS/{spd:.4f}"
-            f_d = min(fade, out_dur / 2) if fade > 0 else 0
-            if f_d > 0:
-                v += f",fade=t=in:st=0:d={f_d:.3f},fade=t=out:st={out_dur - f_d:.3f}:d={f_d:.3f}"
-            fc.append(v + f"[v{i}]")
-            if keep:
-                if it["audio"]:
-                    a = f"[{i}:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo"
-                    if spd != 1:
-                        a += "," + atempo_chain(spd)
-                    a += ",asetpts=PTS-STARTPTS"
-                    if f_d > 0:
-                        a += f",afade=t=in:st=0:d={f_d:.3f},afade=t=out:st={out_dur - f_d:.3f}:d={f_d:.3f}"
-                else:
-                    a = f"anullsrc=r=48000:cl=stereo,atrim=0:{out_dur:.3f},asetpts=PTS-STARTPTS"
-                fc.append(a + f"[a{i}]")
-        join = "".join(f"[v{i}]" + (f"[a{i}]" if keep else "") for i in range(len(items)))
-        fc.append(f"{join}concat=n={len(items)}:v=1:a={1 if keep else 0}[v]" + ("[a]" if keep else ""))
-        # (inline: "-filter_complex_script" is gone from newer ffmpeg versions; 60 pieces stay far below the command line limit)
-        cmd += ["-filter_complex", ";".join(fc), "-map", "[v]"] + (["-map", "[a]"] if keep else ["-an"])
-        cmd += ["-c:v", "libx264", "-preset", "veryfast", "-crf", "19", "-pix_fmt", "yuv420p"] + (["-c:a", "aac", "-b:a", "192k"] if keep else []) + ["-movflags", "+faststart", spec["out"]]
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, creationflags=flags)
-        last = 0.0
-        for line in proc.stdout:
-            line = line.strip()
-            if line.startswith("out_time_us=") or line.startswith("out_time_ms="):
-                try:
-                    t_out = int(line.split("=", 1)[1]) / 1e6
-                except ValueError:
-                    continue
-                if time.time() - last > 0.7:
-                    st["pct"] = max(0, min(99, int(100 * t_out / total))) if total > 0 else 0
-                    save()
-                    last = time.time()
-        err = proc.stderr.read()
-        proc.wait()
-        if proc.returncode != 0 or not os.path.isfile(spec["out"]):
-            raise RuntimeError((err or "ffmpeg failed").strip().splitlines()[-1] if (err or "").strip() else "ffmpeg failed")
+        total_all = sum((it["end"] - it["start"]) / it["speed"] for it in items)
+        state = {"base": 0.0, "last": 0.0}
+
+        def render(chunk, out):
+            cmd = [spec["ffmpeg"], "-hide_banner", "-loglevel", "error", "-y", "-progress", "pipe:1", "-nostats"]
+            fc, total = [], 0.0
+            for i, it in enumerate(chunk):
+                span, spd = it["end"] - it["start"], it["speed"]
+                out_dur = span / spd
+                total += out_dur
+                cmd += ["-ss", f"{it['start']:.3f}", "-t", f"{span:.3f}", "-i", it["path"]]
+                v = f"[{i}:v:0]scale={w}:{h}:force_original_aspect_ratio=decrease:flags=lanczos,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2:black,setsar=1,fps={fps},format=yuv420p,setpts=PTS-STARTPTS"
+                if spd != 1:
+                    v += f",setpts=PTS/{spd:.4f}"
+                f_d = min(fade, out_dur / 2) if fade > 0 else 0
+                if f_d > 0:
+                    v += f",fade=t=in:st=0:d={f_d:.3f},fade=t=out:st={out_dur - f_d:.3f}:d={f_d:.3f}"
+                fc.append(v + f"[v{i}]")
+                if keep:
+                    if it["audio"]:
+                        a = f"[{i}:a:0]aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo"
+                        if spd != 1:
+                            a += "," + atempo_chain(spd)
+                        a += ",asetpts=PTS-STARTPTS"
+                        if f_d > 0:
+                            a += f",afade=t=in:st=0:d={f_d:.3f},afade=t=out:st={out_dur - f_d:.3f}:d={f_d:.3f}"
+                    else:
+                        a = f"anullsrc=r=48000:cl=stereo,atrim=0:{out_dur:.3f},asetpts=PTS-STARTPTS"
+                    fc.append(a + f"[a{i}]")
+            join = "".join(f"[v{i}]" + (f"[a{i}]" if keep else "") for i in range(len(chunk)))
+            fc.append(f"{join}concat=n={len(chunk)}:v=1:a={1 if keep else 0}[v]" + ("[a]" if keep else ""))
+            # (inline: "-filter_complex_script" is gone from newer ffmpeg versions; EDIT_CHUNK pieces stay far below the command line limit)
+            cmd += ["-filter_complex", ";".join(fc), "-map", "[v]"] + (["-map", "[a]"] if keep else ["-an"])
+            cmd += ["-c:v", "libx264", "-preset", "veryfast", "-crf", "19", "-pix_fmt", "yuv420p"] + (["-c:a", "aac", "-b:a", "192k"] if keep else []) + ["-movflags", "+faststart", out]
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, creationflags=flags)
+            for line in proc.stdout:
+                line = line.strip()
+                if line.startswith("out_time_us=") or line.startswith("out_time_ms="):
+                    try:
+                        t_out = int(line.split("=", 1)[1]) / 1e6
+                    except ValueError:
+                        continue
+                    if time.time() - state["last"] > 0.7:
+                        st["pct"] = max(0, min(99, int(100 * (state["base"] + t_out) / total_all))) if total_all > 0 else 0
+                        save()
+                        state["last"] = time.time()
+            err = proc.stderr.read()
+            proc.wait()
+            if proc.returncode != 0 or not os.path.isfile(out):
+                raise RuntimeError((err or "ffmpeg failed").strip().splitlines()[-1] if (err or "").strip() else "ffmpeg failed")
+            state["base"] += total
+
+        chunks = [items[k:k + EDIT_CHUNK] for k in range(0, len(items), EDIT_CHUNK)]
+        if len(chunks) == 1:
+            render(chunks[0], spec["out"])
+        else:
+            parts = []
+            for k, chunk in enumerate(chunks):
+                part = f"{spec['out']}.part{k}.mp4"
+                leftovers.append(part)
+                render(chunk, part)
+                parts.append(part)
+            lst = spec["out"] + ".parts.txt"
+            leftovers.append(lst)
+            with open(lst, "w", encoding="utf-8") as f:
+                for part in parts:
+                    f.write("file '" + part.replace("\\", "/").replace("'", "'\\''") + "'\n")
+            r = subprocess.run([spec["ffmpeg"], "-hide_banner", "-loglevel", "error", "-y", "-f", "concat", "-safe", "0", "-i", lst, "-c", "copy", "-movflags", "+faststart", spec["out"]],
+                               capture_output=True, text=True, creationflags=flags)
+            if r.returncode != 0 or not os.path.isfile(spec["out"]):
+                raise RuntimeError((r.stderr or "ffmpeg failed").strip().splitlines()[-1] if (r.stderr or "").strip() else "ffmpeg failed")
         st["files"].append(spec["out"])
         st["pct"] = 100
         st["state"] = "done"
@@ -1559,6 +1587,12 @@ def edit_job(spec_path):
     except Exception as e:  # noqa: BLE001
         st["state"] = "error"
         st["error"] = str(e)
+    finally:
+        for lf in leftovers:
+            try:
+                os.remove(lf)
+            except OSError:
+                pass
     save()
 
 

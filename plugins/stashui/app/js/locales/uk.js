@@ -2737,4 +2737,7 @@ export default {
   "Stash-box link": "Зв'язок зі stash-box",
   "is linked to": "пов'язаний із",
   "is not linked to": "не пов'язаний із",
+  "…and put everything from all the videos into ONE video (always Exact, the same size for all)": "…і об'єднати все з усіх відео в ОДНЕ відео (завжди «Точно», один розмір для всіх)",
+  "Putting everything together … {n} %": "Об'єдную … {n} %",
+  "Marker clips": "Кліпи з маркерів",
 };

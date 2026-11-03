@@ -7,6 +7,13 @@
 
 export const CHANGES = [
   {
+    v: "3.138.1",
+    date: "2026-11-03",
+    items: [
+      ["ui", "Clips from markers: new choice “…and put everything from all the videos into ONE video”. “Join the clips of each video into one” only joins per source video (99 markers from 20 videos gave 20 videos); the new box makes a single video of all picked clips, in the order of the list, all brought to the size of the first one. The Editor can take up to 600 pieces now (long lists are made in parts of 40 and put together). After the update use “Reload plugins” in Stash.", "标记转片段：新增选项“……并把所有视频里的内容合并成一个视频”。“把每个视频的片段合并成一个”只按来源视频合并（来自 20 个视频的 99 个标记会得到 20 个视频）；新选项把所有选中的片段按列表顺序合成一个视频，尺寸与第一个相同。编辑器现在最多可处理 600 段（较长的列表会分成每 40 段一份再拼接）。更新后请在 Stash 中使用“Reload plugins”。", "markers::[data-mkclips]"],
+    ],
+  },
+  {
     v: "3.138.0",
     date: "2026-11-03",
     items: [

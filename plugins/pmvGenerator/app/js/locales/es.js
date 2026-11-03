@@ -2680,4 +2680,7 @@ export default {
   "Stash-box link": "Enlace a stash-box",
   "is linked to": "está enlazado con",
   "is not linked to": "no está enlazado con",
+  "…and put everything from all the videos into ONE video (always Exact, the same size for all)": "…y juntar todo lo de todos los vídeos en UN solo vídeo (siempre en modo Exacto, mismo tamaño para todos)",
+  "Putting everything together … {n} %": "Juntándolo todo … {n} %",
+  "Marker clips": "Clips de marcadores",
 };

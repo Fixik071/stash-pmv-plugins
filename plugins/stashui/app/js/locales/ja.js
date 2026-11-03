@@ -2704,4 +2704,7 @@ export default {
   "Stash-box link": "Stash-box のリンク",
   "is linked to": "リンク済み:",
   "is not linked to": "リンクされていない:",
+  "…and put everything from all the videos into ONE video (always Exact, the same size for all)": "…さらに、すべての動画の分を1本の動画にまとめる（常に「正確」、全部同じサイズ）",
+  "Putting everything together … {n} %": "まとめています … {n} %",
+  "Marker clips": "マーカーのクリップ",
 };

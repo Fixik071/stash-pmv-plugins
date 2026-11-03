@@ -2658,4 +2658,7 @@ export default {
   "Stash-box link": "Stash-Box-Verknüpfung",
   "is linked to": "ist verknüpft mit",
   "is not linked to": "ist nicht verknüpft mit",
+  "…and put everything from all the videos into ONE video (always Exact, the same size for all)": "…und alles aus allen Videos zu EINEM Video zusammenfügen (immer „Exakt“, für alle dieselbe Größe)",
+  "Putting everything together … {n} %": "Wird zusammengefügt … {n} %",
+  "Marker clips": "Marker-Clips",
 };
