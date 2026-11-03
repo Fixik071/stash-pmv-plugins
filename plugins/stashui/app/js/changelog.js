@@ -7,6 +7,14 @@
 
 export const CHANGES = [
   {
+    v: "3.138.0",
+    date: "2026-11-03",
+    items: [
+      ["ui", "Stash 0.32 features, where your Stash has them: Studios can be sorted by performers, O count and marker count; every studio shows its numbers including the studios below it; there is a list view next to the cards; and the studio editor sets the sub-studios. Scenes have a production date (Edit scene, and in the info bar when it differs from the date). Duplicates: “Select …” can pick all copies with one video codec (only in groups that also have another codec). Images and galleries sort by performer age. Older Stash versions don't show any of these.", "Stash 0.32 的新功能（仅在你的 Stash 支持时出现）：工作室可按演员数、O 次数和标记数排序；每个工作室的数字包含其下属工作室；除卡片外还有列表视图；工作室编辑器可设置子工作室。场景有“制作日期”（编辑场景中，与发行日期不同时也显示在信息栏里）。重复项：“选择 …”可选中所有使用某种视频编码的副本（只在同时含有其他编码的组里）。图片和图集可按演员年龄排序。旧版 Stash 不会显示这些。", "studios::[data-viewseg]"],
+      ["ui", "More from the same Stash release: a group page lists its sub-groups, with a filter and a sort; a gallery card has a play button that starts its slideshow at once; the image viewer counts across the whole list (not just what is loaded); with one image selected on a performer's page, “Set as performer image” opens the photo cutter with that picture; and the Advanced filter has “Stash-box link” (scenes linked, or not, to a chosen stash-box).", "同一 Stash 版本的其他功能：分组页面列出子分组，可筛选和排序；图集卡片上有播放按钮，可直接开始幻灯片；图片查看器的计数覆盖整个列表（不只是已加载的部分）；在演员页面选中一张图片时，“设为演员图片”会用这张图打开照片裁剪；高级筛选新增“Stash-box 关联”（场景是否关联到所选 stash-box）。"],
+    ],
+  },
+  {
     v: "3.137.0",
     date: "2026-11-02",
     items: [

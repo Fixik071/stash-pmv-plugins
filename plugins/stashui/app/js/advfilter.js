@@ -4,12 +4,15 @@
 
 import { esc, icon, openDrawer } from "./ui.js";
 import { t } from "./i18n.js";
+import { gql } from "./api.js";
 
 const TXT = ["INCLUDES", "EXCLUDES", "EQUALS", "NOT_EQUALS", "MATCHES_REGEX", "NOT_MATCHES_REGEX", "IS_NULL", "NOT_NULL"];
 const NUM = ["EQUALS", "NOT_EQUALS", "GREATER_THAN", "LESS_THAN", "BETWEEN", "NOT_BETWEEN", "IS_NULL", "NOT_NULL"];
 const ENUM = ["EQUALS", "NOT_EQUALS", "GREATER_THAN", "LESS_THAN"];
 const IDS = ["INCLUDES", "INCLUDES_ALL", "EXCLUDES", "IS_NULL", "NOT_NULL"];
 const STU = ["INCLUDES", "EXCLUDES", "IS_NULL", "NOT_NULL"];
+const SBX = ["NOT_NULL", "IS_NULL"]; // linked to a stash-box / not linked
+const SBXNAME = { NOT_NULL: "is linked to", IS_NULL: "is not linked to" };
 
 const MODNAME = {
   INCLUDES: "contains", EXCLUDES: "doesn't contain", EQUALS: "is", NOT_EQUALS: "is not",
@@ -23,7 +26,7 @@ const RES = [["LOW", "240p"], ["R360P", "360p"], ["STANDARD", "480p"], ["WEB_HD"
 const ORI = [["LANDSCAPE", "Landscape"], ["PORTRAIT", "Portrait"], ["SQUARE", "Square"]];
 const YESNO = [["true", "Yes"], ["false", "No"]];
 
-// type: text | num | date | time | bool | enum | ori | flag (a string "true"/"false") | missing | tags | perfs | studios
+// type: text | num | date | time | bool | enum | ori | flag (a string "true"/"false") | missing | tags | perfs | studios | stashbox (a stash-box to pick)
 // mul: the field is kept in a smaller unit (seconds, bytes, …) than shown
 const f = (k, label, type, extra) => Object.assign({ k, label, type }, extra);
 const COMMON = [
@@ -46,6 +49,7 @@ export const FIELDS = {
     f("interactive", "Has a funscript", "bool"), f("interactive_speed", "Funscript speed", "num"),
     f("has_markers", "Has markers", "flag"), f("url", "URL", "text"), f("code", "Code", "text"), f("director", "Director", "text"),
     f("captions", "Subtitles", "text"), f("file_count", "Number of files", "num"),
+    f("stash_id_endpoint", "Stash-box link", "stashbox", { opts: [] }),
     f("is_missing", "Is missing", "missing", { opts: ["title", "details", "url", "date", "cover", "studio", "performers", "tags", "stash_id", "phash"] }),
   ],
   image: [
@@ -62,7 +66,7 @@ export const FIELDS = {
   ],
 };
 const fieldOf = (kind, k) => (FIELDS[kind] || []).find((x) => x.k === k);
-const modsOf = (fd) => (fd.type === "text" ? TXT : fd.type === "num" || fd.type === "date" || fd.type === "time" ? NUM : fd.type === "enum" ? ENUM : fd.type === "tags" || fd.type === "perfs" ? IDS : fd.type === "studios" ? STU : null);
+const modsOf = (fd) => (fd.type === "text" ? TXT : fd.type === "num" || fd.type === "date" || fd.type === "time" ? NUM : fd.type === "enum" ? ENUM : fd.type === "tags" || fd.type === "perfs" ? IDS : fd.type === "studios" ? STU : fd.type === "stashbox" ? SBX : null);
 const nullish = (m) => m === "IS_NULL" || m === "NOT_NULL";
 const ranged = (m) => m === "BETWEEN" || m === "NOT_BETWEEN";
 
@@ -107,6 +111,8 @@ function criterionOf(kind, r) {
       return has(r.v) ? [fd.k, { modifier: m, value: String(r.v) }] : null;
     case "enum":
       return has(r.v) ? [fd.k, { modifier: m, value: String(r.v) }] : null;
+    case "stashbox": // StashIDCriterionInput: no box picked = any
+      return [fd.k, { endpoint: r.v ? String(r.v) : undefined, stash_id: "", modifier: m }];
     case "date":
     case "time": {
       if (nullish(m)) return [fd.k, { modifier: m, value: "" }];
@@ -173,7 +179,7 @@ export function openAdvFilter(kind, src, onApply) {
 
   function valueHtml(r, i) {
     const fd = fieldOf(kind, r.k);
-    if (nullish(r.m)) return "";
+    if (nullish(r.m) && fd.type !== "stashbox") return "";
     const inp = (type, key, extra = "") => `<input class="kb-field" type="${type}" data-v="${key}" value="${esc(r[key])}" ${extra}>`;
     switch (fd.type) {
       case "bool":
@@ -184,6 +190,8 @@ export function openAdvFilter(kind, src, onApply) {
         return `<select class="kb-field" data-v="v"><option value="">${t("choose …")}</option>${ORI.map(([v, l]) => `<option value="${v}"${r.v === v ? " selected" : ""}>${t(l)}</option>`).join("")}</select>`;
       case "enum":
         return `<select class="kb-field" data-v="v"><option value="">${t("choose …")}</option>${fd.opts.map(([v, l]) => `<option value="${v}"${r.v === v ? " selected" : ""}>${l}</option>`).join("")}</select>`;
+      case "stashbox":
+        return `<select class="kb-field" data-v="v"><option value="">${t("any stash-box")}</option>${fd.opts.map(([v, l]) => `<option value="${esc(v)}"${r.v === v ? " selected" : ""}>${esc(l)}</option>`).join("")}</select>`;
       case "missing":
         return `<select class="kb-field" data-v="v"><option value="">${t("choose …")}</option>${fd.opts.map((v) => `<option value="${v}"${r.v === v ? " selected" : ""}>${t("missing: " + v)}</option>`).join("")}</select>`;
       case "tags":
@@ -207,7 +215,7 @@ export function openAdvFilter(kind, src, onApply) {
         .map((r, i) => {
           const fd = fieldOf(kind, r.k);
           const mods = modsOf(fd);
-          const names = fd.type === "tags" || fd.type === "perfs" || fd.type === "studios" ? IDMODNAME : MODNAME;
+          const names = fd.type === "tags" || fd.type === "perfs" || fd.type === "studios" ? IDMODNAME : fd.type === "stashbox" ? SBXNAME : MODNAME;
           return `<div class="kb-advf-row" data-i="${i}">
             <select class="kb-field" data-k aria-label="${t("Field")}">${fields.map((x) => `<option value="${x.k}"${x.k === r.k ? " selected" : ""}>${t(x.label)}</option>`).join("")}</select>
             ${mods ? `<select class="kb-field" data-m aria-label="${t("Condition")}">${mods.map((m) => `<option value="${m}"${m === r.m ? " selected" : ""}>${t(names[m])}</option>`).join("")}</select>` : ""}
@@ -272,4 +280,13 @@ export function openAdvFilter(kind, src, onApply) {
   };
   if (!rows.length) rows.push(fresh(fields[0].k));
   paint();
+  // the stash-boxes set up in Stash (for the "Stash-box link" criterion) – the drawer is drawn again when they are known
+  const sbx = fields.find((x) => x.type === "stashbox");
+  if (sbx && !sbx.opts.length)
+    gql(`query SbxList { configuration { general { stashBoxes { endpoint name } } } }`)
+      .then((d) => {
+        sbx.opts = ((d.configuration.general || {}).stashBoxes || []).map((b) => [b.endpoint, b.name || b.endpoint]);
+        if (sbx.opts.length && rows.some((r) => r.k === sbx.k)) paint();
+      })
+      .catch(() => {});
 }

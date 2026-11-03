@@ -83,7 +83,9 @@ export async function render(host, params) {
 
   const L = list();
   const pos = posNow();
-  $("[data-counter]").textContent = L.length > 1 && pos >= 0 ? `${pos + 1} / ${L.length}${ctx.hang && !ctx.hang.done ? "+" : ""}` : "";
+  // one counter across the whole list (Stash 0.32 does the same): the total comes from the query, not from what is loaded so far
+  const all = ctx.hang && ctx.hang.count > L.length ? ctx.hang.count : L.length;
+  $("[data-counter]").textContent = all > 1 && pos >= 0 ? `${pos + 1} / ${all}${ctx.hang && !ctx.hang.done && ctx.hang.count == null ? "+" : ""}` : "";
   $("[data-prev]").hidden = !(pos > 0);
   $("[data-next]").hidden = !(pos >= 0 && (pos < L.length - 1 || (ctx.hang && !ctx.hang.done)));
   // Preload neighbors

@@ -5,7 +5,7 @@ import { esc, icon, store, debounce, seed, errorToast, toast, plural, fmtNum, co
 import { filterOf, QUERY_KEYS, loadPlaylists, savePlaylists, labelsFor, linkOf } from "../playlists.js";
 import { t } from "../i18n.js";
 import { generatePreviews } from "../genprev.js";
-import { findItems, findIds, favoriteTagId, setFavorite, bulkUpdate, destroyItems } from "../api.js";
+import { findItems, findIds, favoriteTagId, setFavorite, bulkUpdate, destroyItems, gql, updatePerformer } from "../api.js";
 import { ensureTiers, hasTiers } from "../tiers.js";
 import { restrictIds, critInfo, critKinds, parseCrit, critStr, critText, sortByCrit, openCritFilter } from "../ratingx.js";
 import { TIERS } from "../versusx.js";
@@ -18,6 +18,7 @@ import { openEditor, openQuickTags, deleteWithConfirm } from "./edit.js";
 import { loadStashFilters, stashFilter } from "../stashfilters.js";
 import { hasSources, extendPage, mountSlots, registerList } from "../ext.js";
 import { getDef, defButton } from "../defsort.js";
+import { capsNow } from "../caps.js";
 import { openAdvFilter, parseAdv, advStr, advCount, andInto } from "../advfilter.js";
 
 export const KIND_NAME = { scene: ["Scene", "Scenes"], image: ["Image", "Images"], gallery: ["Gallery", "Galleries"] };
@@ -176,7 +177,10 @@ export function mediaBrowser(host, opts) {
       b.setAttribute("aria-selected", b.dataset.kind === kind);
     });
     const sortSel = $("[data-sort]");
-    const sorts = SORTS[kind].concat((opts.extraSorts && opts.extraSorts[kind]) || []);
+    // Stash 0.32: galleries and images can be sorted by the age of their performers
+    const cn = capsNow();
+    const newer = cn && cn.v32 && kind !== "scene" ? [["performer_age", "Performer age"]] : [];
+    const sorts = SORTS[kind].concat(newer, (opts.extraSorts && opts.extraSorts[kind]) || []);
     sortSel.innerHTML = sorts.map(([k, name]) => `<option value="${k}">${t(name)}</option>`).join("");
     sortSel.value = sorts.some(([k]) => k === st.sort) ? st.sort : sorts[0][0];
     // a sort by a criterion of the detailed rating (the entries are added when the criteria are known)
@@ -499,6 +503,7 @@ export function mediaBrowser(host, opts) {
       <button class="kb-btn" data-b="fav"><span class="kb-dotmini"></span>${t("Favorite")}</button>
       <button class="kb-btn" data-b="unfav">${t("Remove favorite")}</button>
       <button class="kb-btn" data-b="edit">${icon("edit")}${t("Edit")}</button>
+      ${kind === "image" && opts.page === "performer" && set.size === 1 ? `<button class="kb-btn" data-b="perfimg" title="${t("Cut a square out of this picture and use it as the performer's photo")}">${icon("camera")}${t("Set as performer image")}</button>` : ""}
       ${kind !== "gallery" ? `<button class="kb-btn" data-b="genprev" title="${t("Makes the missing hover previews, timeline images and thumbnails of just these items")}">${t("Generate previews")}</button>` : ""}
       ${kind !== "gallery" ? `<button class="kb-btn" data-b="queue">${icon("queue")}${t("Add to queue")}</button>` : ""}
       <button class="kb-btn is-danger" data-b="delete">${icon("trash")}${t("Delete")}</button>`;
@@ -564,6 +569,22 @@ export function mediaBrowser(host, opts) {
           return openEditor(kind, pieces, {
             onSaved: () => refreshItems(ids),
           });
+        case "perfimg": {
+          // Stash 0.32 has "Set as performer image" on the performer's Images tab – here the picture goes through the photo cutter first
+          const src = ((await gql(`query($id: ID!) { findImage(id: $id) { paths { image } } }`, { id: ids[0] })).findImage || {}).paths;
+          if (!src || !src.image) throw new Error(t("The picture can't be found"));
+          const bmp = await createImageBitmap(await (await fetch(src.image)).blob());
+          const canvas = document.createElement("canvas");
+          canvas.width = bmp.width;
+          canvas.height = bmp.height;
+          canvas.getContext("2d").drawImage(bmp, 0, 0);
+          const { openPhotoCutter } = await import("../perfcut.js");
+          return openPhotoCutter({ id: opts.params.id, name: "" }, async (url) => {
+            await updatePerformer({ id: opts.params.id, image: url });
+            toast(t("The performer's photo is set"), "ok");
+            exitSelect();
+          }, { canvas, title: t("Set as performer image") });
+        }
         case "delete": {
           const r = await confirmDialog({
             title: t("Delete {what}?", { what: plural(ids.length, KIND_UNIT[kind][0], KIND_UNIT[kind][1]) }),

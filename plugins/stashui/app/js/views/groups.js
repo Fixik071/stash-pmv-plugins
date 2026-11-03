@@ -9,6 +9,7 @@ import { setQuery } from "../main.js";
 import { mediaBrowser } from "./media.js";
 import { openGroupEditor } from "./groupedit.js";
 import { openAddMedia } from "./perfadd.js";
+import { caps } from "../caps.js";
 
 const SORTS = [
   ["name", "Alphabetical"],
@@ -20,7 +21,7 @@ const SORTS = [
 ];
 const PAGE = 60;
 
-const card = (g) => `<a class="kb-perf kb-group" href="#/group/${esc(g.id)}">
+export const card = (g) => `<a class="kb-perf kb-group" href="#/group/${esc(g.id)}">
     <span class="kb-perf-img">${g.front_image_path ? `<img alt="" loading="lazy" src="${esc(g.front_image_path)}">` : ""}</span>
     <b>${esc(g.name)}</b>
     <small>${[g.scene_count ? plural(g.scene_count, "scene", "scenes") : "", g.date ? String(g.date).slice(0, 4) : ""].filter(Boolean).join(" · ") || "&nbsp;"}</small>
@@ -123,10 +124,11 @@ async function renderOne(main, id, query) {
 
 async function drawOne(main, id, query, redraw) {
   let g;
+  const cp = await caps();
   try {
     g = (
       await gql(
-        `query($id: ID!) { findGroup(id: $id) { id name date director synopsis rating100 front_image_path back_image_path scene_count studio { id name } tags { id name } } }`,
+        `query($id: ID!) { findGroup(id: $id) { id name date director synopsis rating100 front_image_path back_image_path scene_count studio { id name } tags { id name }${cp.subGroups ? " sub_groups { group { id name date rating100 front_image_path scene_count } }" : ""} } }`,
         { id },
         { signal: routeSignal() }
       )
@@ -158,7 +160,25 @@ async function drawOne(main, id, query, redraw) {
         ${g.synopsis ? `<p class="kb-lead kb-perf-details">${esc(g.synopsis)}</p>` : ""}
       </div>
     </header>
+    ${(g.sub_groups || []).length ? `<section class="kb-subgroups">
+      <div class="kb-subgroups-bar"><h2 class="kb-h2">${t("Sub-groups")} <small>${(g.sub_groups || []).length}</small></h2>
+        <label class="kb-search">${icon("search")}<input class="kb-field" type="search" data-sgq placeholder="${t("Filter the sub-groups")}"></label>
+        <select class="kb-field" data-sgsort aria-label="${t("Sort order")}">${SORTS.filter(([v]) => v !== "random" && v !== "created_at").map(([v, l]) => `<option value="${v}">${t(l)}</option>`).join("")}</select></div>
+      <div class="kb-perfgrid" data-sglist></div></section>` : ""}
     <section data-browser></section>`;
+  if ((g.sub_groups || []).length) {
+    const drawSub = () => {
+      const q = main.querySelector("[data-sgq]").value.trim().toLowerCase();
+      const by = main.querySelector("[data-sgsort]").value;
+      const key = { name: (x) => x.name.toLowerCase(), date: (x) => x.date || "", scenes_count: (x) => x.scene_count || 0, rating: (x) => x.rating100 || 0 }[by];
+      const list = g.sub_groups.map((s) => s.group).filter((x) => x && (!q || x.name.toLowerCase().includes(q)));
+      list.sort((a, b) => (key(a) < key(b) ? -1 : key(a) > key(b) ? 1 : 0) * (by === "name" ? 1 : -1));
+      main.querySelector("[data-sglist]").innerHTML = list.map(card).join("") || `<div class="kb-empty"><b>${t("Nothing matches")}</b></div>`;
+    };
+    main.querySelector("[data-sgq]").addEventListener("input", debounce(drawSub, 150));
+    main.querySelector("[data-sgsort]").onchange = drawSub;
+    drawSub();
+  }
   main.querySelector("[data-edit]").onclick = () => openGroupEditor(id, { onSaved: redraw });
   main.querySelector("[data-add]").onclick = () =>
     openAddMedia({ id: g.id, name: g.name }, redraw, {

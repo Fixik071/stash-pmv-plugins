@@ -76,8 +76,21 @@ export async function render(main, params, query) {
     app.context = { kind: "image", pieces: h.pieces, index: 0, hang: h, slideshow: true };
     go("image/" + h.pieces[0].id);
   };
+  // opened with the play button of a gallery card (?play=1): the slideshow starts as soon as the pictures are there
+  let playT = 0;
+  if (query.play) {
+    let tries = 0;
+    playT = setInterval(() => {
+      const h = b.hang;
+      if ((h && h.pieces.length) || ++tries > 40) {
+        clearInterval(playT);
+        if (h && h.pieces.length) main.querySelector("[data-slides]").click();
+      }
+    }, 150);
+  }
   const offKey = editKey(main);
   return () => {
+    clearInterval(playT);
     offKey();
     xhead.destroy();
     b.destroy();

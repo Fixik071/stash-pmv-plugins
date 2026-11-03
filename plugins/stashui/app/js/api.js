@@ -3,6 +3,7 @@
 import { t, locale } from "./i18n.js";
 import { LARGE_SCENES, LARGE_IMAGES, largeNow } from "./scale.js";
 import { hideQuery, isHiddenRoot, holdsHidden } from "./hidden.js";
+import { caps } from "./caps.js";
 
 // Requests of the page you're on stop when you leave it (a long query for a page nobody looks at any more
 // only keeps Stash busy): routeSignal() is the signal of the current page, abortRoute() ends it (main.js, on navigating).
@@ -140,8 +141,9 @@ export async function countItems(kind, filter) {
 const PERF_CARD = "id disambiguation gender birthdate death_date country favorite scene_count";
 
 export async function getScene(id) {
+  const cp = await caps(); // Stash 0.32: the production date
   // performers a second time: GraphQL merges the selections – only the player needs the details for the hover cards
-  const d = await gql(`query($id: ID!) { findScene(id: $id) { ${F_SCENE} performers { ${PERF_CARD} } scene_markers { id title seconds end_seconds stream preview screenshot primary_tag { id name } tags { id name } } sceneStreams { url mime_type label } captions { language_code caption_type } paths { caption } } }`, { id });
+  const d = await gql(`query($id: ID!) { findScene(id: $id) { ${F_SCENE}${cp.v32 ? " production_date" : ""} performers { ${PERF_CARD} } scene_markers { id title seconds end_seconds stream preview screenshot primary_tag { id name } tags { id name } } sceneStreams { url mime_type label } captions { language_code caption_type } paths { caption } } }`, { id });
   return d.findScene;
 }
 export async function getImage(id) {

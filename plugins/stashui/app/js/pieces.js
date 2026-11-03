@@ -143,6 +143,7 @@ function pieceHtml(p) {
     (p.crit ? `<span class="kb-critbars" aria-hidden="true">${p.crit.slice(0, 6).map((c) => `<i style="--v:${c.score * 20}%" title="${esc(c.name)}: ${c.score} / 5"></i>`).join("")}</span>` : "") +
     studioBadge(p) +
     `<span class="kb-pick" role="checkbox" aria-checked="false" aria-label="${t("Select")}">${icon("check")}</span>` +
+    (p.kind === "gallery" ? `<span class="kb-gplay" data-gplay role="button" tabindex="0" title="${esc(t("Start the slideshow"))}" aria-label="${esc(t("Start the slideshow"))}">${icon("slides")}</span>` : "") +
     `<span class="kb-placard"><b>${esc(p.title)}</b><small>${esc(p.meta)}</small></span>` +
     `</${tag}>`
   );
@@ -578,6 +579,12 @@ export class Hang {
       }
       if (n._piece && n._piece.foreign) return; // an extension's card: its link opens in a new tab
       const key = n.dataset.key;
+      // the play button of a gallery card: its slideshow starts at once (the gallery page does it when it has the pictures)
+      if (e.target.closest("[data-gplay]")) {
+        e.preventDefault();
+        location.hash = "#/gallery/" + key.split(":")[1] + "?play=1";
+        return;
+      }
       if (e.target.closest(".kb-pick") || this.selected.size || e.shiftKey || e.ctrlKey || e.metaKey) {
         e.preventDefault();
         this.toggle(key, e.shiftKey);

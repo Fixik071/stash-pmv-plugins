@@ -2,9 +2,10 @@
 // (including those of its sub-studios). Scrolling loads more.
 
 import { getDef, defButton } from "../defsort.js";
-import { esc, icon, debounce, errorToast, plural, starsHtml, editKey } from "../ui.js";
+import { esc, icon, debounce, errorToast, plural, starsHtml, editKey, store, fmtNum } from "../ui.js";
 import { t } from "../i18n.js";
 import { gql, routeSignal } from "../api.js";
+import { caps } from "../caps.js";
 import { mediaBrowser } from "./media.js";
 import { openStudioEditor } from "./studioedit.js";
 import { go, setQuery } from "../main.js";
@@ -16,6 +17,12 @@ const SORTS = [
   ["created_at", "Recently added"],
   ["random", "Random"],
 ];
+// Stash 0.32 adds these sorts
+const SORTS_NEW = [
+  ["performers_count", "Most performers"],
+  ["o_counter", "Most O"],
+  ["scene_markers_count", "Most markers"],
+];
 const PAGE = 60;
 
 // Stash serves a placeholder when a studio has no logo – then the name takes its place
@@ -24,8 +31,19 @@ const hasLogo = (s) => s.image_path && !/default=true/.test(s.image_path);
 const card = (s) => `<a class="kb-perf kb-studiocard" href="#/studio/${esc(s.id)}">
     <span class="kb-perf-img">${hasLogo(s) ? `<img alt="" loading="lazy" src="${esc(s.image_path)}">` : `<em>${esc(s.name)}</em>`}</span>
     <b>${esc(s.name)}</b>
-    <small>${[s.scene_count ? plural(s.scene_count, "scene", "scenes") : "", s.parent_studio ? s.parent_studio.name : ""].filter(Boolean).join(" · ") || "&nbsp;"}</small>
+    <small>${[s.scene_count ? plural(s.scene_count, "scene", "scenes") : "", s.performer_count ? plural(s.performer_count, "performer", "performers") : "", s.parent_studio ? s.parent_studio.name : ""].filter(Boolean).join(" · ") || "&nbsp;"}</small>
     ${s.rating100 ? starsHtml(s.rating100) : ""}
+  </a>`;
+
+// One studio as a row (the list view)
+const row = (s) => `<a class="kb-studiorow" href="#/studio/${esc(s.id)}">
+    <span class="kb-studiorow-img">${hasLogo(s) ? `<img alt="" loading="lazy" src="${esc(s.image_path)}">` : `<em>${esc(s.name.slice(0, 2))}</em>`}</span>
+    <b>${esc(s.name)}</b>
+    <span class="kb-studiorow-parent">${s.parent_studio ? esc(s.parent_studio.name) : ""}</span>
+    <span>${s.scene_count ? fmtNum(s.scene_count) : "–"}</span>
+    <span>${s.performer_count ? fmtNum(s.performer_count) : "–"}</span>
+    <span>${s.o_counter ? fmtNum(s.o_counter) : "–"}</span>
+    <span>${s.rating100 ? starsHtml(s.rating100) : ""}</span>
   </a>`;
 
 export async function render(main, params, query) {
@@ -42,12 +60,22 @@ async function renderList(main, query) {
       <div class="kb-head-tools">
         <label class="kb-search">${icon("search")}<input class="kb-field" type="search" data-q placeholder="${t("Search studios")}" value="${esc(query.q || "")}"></label>
         <select class="kb-field" data-sort aria-label="${t("Sort order")}">${SORTS.map(([v, l]) => `<option value="${v}">${t(l)}</option>`).join("")}</select>
+        <span class="kb-seg" data-viewseg title="${esc(t("How studios are shown"))}"><button type="button" data-view="cards">${t("Cards")}</button><button type="button" data-view="list">${t("List")}</button></span>
         <button class="kb-btn is-primary" data-new>${icon("plus")}<span>${t("New studio")}</span></button>
       </div>
     </header>
     <div class="kb-perfgrid kb-studiogrid" data-list><div class="kb-loading">${t("Loading …")}</div></div>
     <div class="kb-perf-more" data-more></div>`;
   const $ = (s) => main.querySelector(s);
+  const cp = await caps();
+  if (cp.v32) $("[data-sort]").insertAdjacentHTML("beforeend", SORTS_NEW.map(([v, l]) => `<option value="${v}">${t(l)}</option>`).join(""));
+  const asList = () => !!store.get("studioList", false);
+  const paintView = () => {
+    $("[data-list]").classList.toggle("kb-studiogrid", !asList());
+    $("[data-list]").classList.toggle("kb-studiotable", asList());
+    main.querySelectorAll("[data-view]").forEach((b) => b.classList.toggle("is-on", (b.dataset.view === "list") === asList()));
+  };
+  paintView();
   $("[data-sort]").value = query.sort || getDef("studios") || "name";
   defButton($("[data-sort]"), () => "studios", () => $("[data-sort]").value);
   let page = 1;
@@ -67,8 +95,10 @@ async function renderList(main, query) {
     }
     try {
       const s = $("[data-sort]").value;
+      // Stash 0.32: the numbers include the studios below (depth -1)
+      const nums = cp.v32 ? "scene_count(depth: -1) performer_count(depth: -1) o_counter(depth: -1)" : "scene_count";
       const d = await gql(
-        `query($f: FindFilterType) { findStudios(filter: $f) { count studios { id name image_path scene_count rating100 parent_studio { id name } } } }`,
+        `query($f: FindFilterType) { findStudios(filter: $f) { count studios { id name image_path ${nums} rating100 parent_studio { id name } } } }`,
         { f: { q: $("[data-q]").value.trim() || undefined, page, per_page: PAGE, sort: s === "random" ? "random_" + seed : s, direction: s === "name" ? "ASC" : "DESC" } },
         { signal: routeSignal() }
       );
@@ -77,8 +107,12 @@ async function renderList(main, query) {
       $("[data-sub]").textContent = plural(total, "studio", "studios");
       const list = d.findStudios.studios;
       if (reset) $("[data-list]").innerHTML = "";
+      const draw = asList() ? row : card;
       if (!loaded && !list.length) $("[data-list]").innerHTML = `<div class="kb-empty"><b>${t("No studios found")}</b><p>${$("[data-q]").value ? t("Try another search.") : t("Make one with “New studio” – or let a scraper fill it in.")}</p></div>`;
-      else $("[data-list]").insertAdjacentHTML("beforeend", list.map(card).join(""));
+      else {
+        if (asList() && !loaded) $("[data-list]").insertAdjacentHTML("beforeend", `<div class="kb-studiorow is-head"><span></span><b>${t("Studio")}</b><span>${t("Part of")}</span><span>${t("Scenes")}</span><span>${t("Performers")}</span><span>${t("O")}</span><span>${t("Rating")}</span></div>`);
+        $("[data-list]").insertAdjacentHTML("beforeend", list.map(draw).join(""));
+      }
       loaded += list.length;
       page++;
     } catch (e) {
@@ -104,6 +138,13 @@ async function renderList(main, query) {
   };
   $("[data-q]").addEventListener("input", debounce(reload, 300));
   $("[data-sort]").onchange = reload;
+  main.querySelector("[data-viewseg]").addEventListener("click", (e) => {
+    const v = e.target.closest("[data-view]");
+    if (!v) return;
+    store.set("studioList", v.dataset.view === "list");
+    paintView();
+    load(true);
+  });
   $("[data-new]").onclick = () => openStudioEditor(null, { name: $("[data-q]").value.trim(), onSaved: (id) => go("studio/" + id) });
   load(true);
   return () => {

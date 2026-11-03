@@ -2,6 +2,7 @@
 
 import { esc, icon, openDrawer, toast, errorToast, starsHtml, ratingClick, ratingFromInput, plural, confirmDialog } from "../ui.js";
 import { t } from "../i18n.js";
+import { caps } from "../caps.js";
 import { gql, getScene, getImage, getGallery, updateItem, bulkUpdate, destroyItems, favoriteTagId, setFavorite } from "../api.js";
 import { tagPicker } from "./tagpicker.js";
 import { perfPicker, knowPerformers } from "./perfpicker.js";
@@ -66,6 +67,7 @@ async function editOne(kind, id, { onSaved, onDeleted, quick }) {
     return errorToast(e, "Couldn't be loaded");
   }
   const favId = await favoriteTagId(false);
+  const cp = kind === "scene" ? await caps() : {};
   const tagIds = x.tags.map((tg) => tg.id).filter((tg) => tg !== favId);
   const isFav = !!favId && x.tags.some((tg) => tg.id === favId);
   const path =
@@ -85,6 +87,7 @@ async function editOne(kind, id, { onSaved, onDeleted, quick }) {
       <div class="kb-form-row"><span>${t("Studio")}</span><div class="kb-tagpick" data-studio></div></div>
       ${kind !== "gallery" ? `<div class="kb-form-row"><span>${t("Galleries")}</span><div class="kb-tagpick" data-galleries></div></div>` : ""}
       <div class="kb-form-row"><span>${t("Date")}</span><span class="kb-datefield"><input class="kb-field" type="text" inputmode="numeric" data-e="date" value="${esc(x.date || "")}" placeholder="${t("YYYY-MM-DD")}" autocomplete="off" title="${t("Year first: 2019, 2019-05 or 2019-05-17 – a year alone is saved as January 1st")}"><button type="button" class="kb-btn is-icon" data-datepick title="${t("Calendar")}" aria-label="${t("Calendar")}">${icon("slides")}</button><input type="date" class="kb-date-native" data-datenative tabindex="-1" aria-hidden="true"></span></div>
+      ${cp.productionDate ? `<label class="kb-form-row"><span>${t("Production date")}</span><input class="kb-field" type="text" inputmode="numeric" data-e="production_date" value="${esc(x.production_date || "")}" placeholder="${t("YYYY-MM-DD")}" autocomplete="off" title="${t("When it was made – the date above is when it came out")}"></label>` : ""}
       <label class="kb-form-row"><span>${t("Description")}</span><textarea class="kb-field" data-e="details" rows="4">${esc(x.details || "")}</textarea></label>
       <label class="kb-form-row"><span>${t("Links (one per line)")}</span><textarea class="kb-field" data-e="urls" rows="2">${esc((x.urls || []).join("\n"))}</textarea></label>
       <label class="kb-switch"><input type="checkbox" data-e="organized"${x.organized ? " checked" : ""}><i></i><span>${t("Organized")}</span></label>
@@ -144,6 +147,14 @@ async function editOne(kind, id, { onSaved, onDeleted, quick }) {
         return errorToast(e, "Date");
       }
     }
+    let production = null;
+    if (v("production_date") && v("production_date").value.trim()) {
+      try {
+        production = dateOf(v("production_date").value);
+      } catch (e) {
+        return errorToast(e, "Production date");
+      }
+    }
     const fav = v("fav").checked;
     let tags = picker.include;
     const favTag = fav ? await favoriteTagId(true) : favId;
@@ -161,6 +172,7 @@ async function editOne(kind, id, { onSaved, onDeleted, quick }) {
       studio_id: studio.include[0] || null,
     };
     if (galleries) input.gallery_ids = galleries.include;
+    if (cp.productionDate) input.production_date = production;
     try {
       el.querySelector("[data-save]").disabled = true;
       if (cover) input.cover_image = cover;

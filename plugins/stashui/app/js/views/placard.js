@@ -84,7 +84,7 @@ export function placardHtml(kind, x) {
   const folder = (info.path || "").split(/[\\/]/).slice(0, -1).join("\\");
   return `
     <div class="kb-plc">
-      <p class="kb-plc-inv">${t({ scene: "Scene", image: "Image", gallery: "Gallery" }[kind])} #${x.id}${x.date ? `${t(", ")}${fmtDate(x.date)}` : ""}</p>
+      <p class="kb-plc-inv">${t({ scene: "Scene", image: "Image", gallery: "Gallery" }[kind])} #${x.id}${x.date ? `${t(", ")}${fmtDate(x.date)}` : ""}${x.production_date && x.production_date !== x.date ? ` · ${t("produced {date}", { date: fmtDate(x.production_date) })}` : ""}</p>
       <h2 class="kb-plc-title">${tierBadge(tierNow(kind, x.id))}${esc(title)}</h2>
       ${x.studio ? `<div class="kb-plc-perfs kb-plc-studiorow"><a class="kb-plc-perf kb-plc-studio" href="#/studio/${x.studio.id}" title="${esc(t("Studio"))}">${x.studio.image_path && !/default=true/.test(x.studio.image_path) ? `<img alt="" loading="lazy" src="${esc(x.studio.image_path)}">` : icon("film")}<span>${esc(x.studio.name)}</span></a></div>` : ""}
       ${info.lines.filter(Boolean).map((l) => `<p class="kb-plc-meta">${esc(l)}</p>`).join("")}

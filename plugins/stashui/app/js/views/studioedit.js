@@ -53,7 +53,7 @@ export async function openStudioEditor(id, opts = {}) {
     sources = await loadSources().catch(() => ({ list: [], byUrl: false }));
     if (id) {
       const urlField = sch.output.has("urls") ? "urls" : "url";
-      const d = await gql(`query($id: ID!) { findStudio(id: $id) { id name ${urlField} details aliases image_path parent_studio { id name } tags { id name }${sch.output.has("stash_ids") ? " stash_ids { endpoint stash_id }" : ""} } }`, { id });
+      const d = await gql(`query($id: ID!) { findStudio(id: $id) { id name ${urlField} details aliases image_path parent_studio { id name } ${sch.input.has("child_ids") && sch.output.has("child_studios") ? "child_studios { id name } " : ""}tags { id name }${sch.output.has("stash_ids") ? " stash_ids { endpoint stash_id }" : ""} } }`, { id });
       p = d.findStudio;
       if (p && !p.urls) p.urls = p.url ? [p.url] : [];
     } else {
@@ -101,6 +101,7 @@ export async function openStudioEditor(id, opts = {}) {
         <label class="kb-form-row is-wide"><span>${t("Name")}</span><input class="kb-field" data-f="name" value="${esc(p.name)}"></label>
         <label class="kb-form-row is-wide"><span>${t("Aliases (comma separated)")}</span><input class="kb-field" data-f="aliases" value="${esc((p.aliases || []).join(", "))}"></label>
         <div class="kb-form-row is-wide"><span>${t("Parent studio")}</span><div class="kb-tagpick" data-parent></div></div>
+        ${sch.input.has("child_ids") ? `<div class="kb-form-row is-wide"><span>${t("Sub-studios")}</span><div class="kb-tagpick" data-children></div></div>` : ""}
         <label class="kb-form-row is-wide"><span>${t("Links (one per line)")}</span><textarea class="kb-field" data-f="urls" rows="3">${esc((p.urls || []).join("\n"))}</textarea></label>
         <label class="kb-form-row is-wide"><span>${t("Details")}</span><textarea class="kb-field" data-f="details" rows="5">${esc(p.details || "")}</textarea></label>
       </div></section>
@@ -118,6 +119,16 @@ export async function openStudioEditor(id, opts = {}) {
     placeholder: t("Search studio"),
     exclude: id ? [id] : [], // a studio can't be its own parent
   });
+  // Stash 0.32: the studios below this one can be set from here, too
+  const kids = sch.input.has("child_ids")
+    ? studioPicker($("[data-children]"), {
+        multi: true,
+        include: (p.child_studios || []).map((c) => c.id),
+        names: Object.fromEntries((p.child_studios || []).map((c) => [c.id, c.name])),
+        placeholder: t("Add a sub-studio"),
+        exclude: id ? [id] : [],
+      })
+    : null;
 
   // ---- Logo
   const setImage = (v) => {
@@ -270,6 +281,7 @@ export async function openStudioEditor(id, opts = {}) {
     else input.url = links[0] || "";
     if (image !== undefined) input.image = image;
     if (sch.input.has("stash_ids")) input.stash_ids = stashIds;
+    if (kids) input.child_ids = kids.include;
     if (id) input.id = id;
     const btn = $("[data-save]");
     btn.disabled = true;

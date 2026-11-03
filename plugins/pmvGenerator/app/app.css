@@ -2316,3 +2316,35 @@ html.kb-glass .kb-tb-h i { box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3); }
 .kb-ed-trimhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; min-width: 0; }
 .kb-ed-trimhead b { overflow: hidden; max-width: 100%; font: 600 14px/1.3 var(--f-text); text-overflow: ellipsis; white-space: nowrap; }
 html.kb-glass .kb-ed-trim { border-color: var(--glass-edge); background: var(--glass-shine), var(--glass); }
+
+/* Gallery cards: a small play button starts the slideshow (shown when the mouse is over the card, always on touch screens) */
+.kb-gplay { position: absolute; top: 40px; right: 8px; z-index: 3; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; color: #fff; background: rgba(0, 0, 0, .62); opacity: 0; cursor: pointer; transition: opacity .15s, background .15s; }
+.kb-gplay .kb-ic { width: 15px; height: 15px; }
+.kb-piece:hover .kb-gplay, .kb-gplay:focus-visible { opacity: 1; }
+.kb-gplay:hover { background: var(--pink); }
+@media (hover: none) { .kb-gplay { opacity: .85; } }
+html.kb-glass .kb-gplay { background: linear-gradient(160deg, rgba(255, 255, 255, .22), rgba(255, 255, 255, .06)); border: 1px solid var(--glass-edge); }
+
+/* Studios as a list (Stash 0.32 has one, too) */
+.kb-studiotable { display: block; overflow: hidden; border: 1px solid var(--bg-3); border-radius: 12px; background: var(--bg-2); }
+.kb-studiorow { display: grid; grid-template-columns: 52px minmax(0, 2fr) minmax(0, 1.3fr) 76px 92px 56px 112px; align-items: center; gap: 12px; padding: 8px 16px; border-bottom: 1px solid var(--bg-3); color: var(--text); text-decoration: none; }
+.kb-studiorow:last-child { border-bottom: 0; }
+a.kb-studiorow:hover { background: var(--bg-3); }
+.kb-studiorow b { overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.kb-studiorow > span { overflow: hidden; color: var(--text-2); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.kb-studiorow.is-head { padding-block: 10px; color: var(--faint); font: 600 11px/1 var(--f-label); letter-spacing: .06em; text-transform: uppercase; }
+.kb-studiorow.is-head > b, .kb-studiorow.is-head > span { color: var(--faint); font: inherit; }
+.kb-studiorow-img { display: grid; place-items: center; width: 52px; height: 34px; border-radius: 6px; background: var(--base); }
+.kb-studiorow-img img { width: 100%; height: 100%; padding: 3px; object-fit: contain; }
+.kb-studiorow-img em { color: var(--faint); font: 700 12px/1 var(--f-display); font-style: normal; }
+@media (max-width: 760px) { .kb-studiorow { grid-template-columns: 44px minmax(0, 1fr) 60px 56px; } .kb-studiorow > :nth-child(3), .kb-studiorow > :nth-child(5), .kb-studiorow > :nth-child(7) { display: none; } }
+html.kb-glass .kb-studiotable { border-color: var(--glass-edge); border-radius: 18px; background: var(--glass-shine), var(--glass); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); box-shadow: var(--glass-shadow); }
+html.kb-glass .kb-studiorow { border-bottom-color: rgba(255, 255, 255, .1); }
+html.kb-glass a.kb-studiorow:hover { background: rgba(255, 255, 255, .08); }
+html.kb-glass .kb-studiorow-img { background: rgba(255, 255, 255, .08); }
+
+/* Sub-groups on a group page */
+.kb-subgroups { margin: 18px 0 8px; }
+.kb-subgroups-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 14px; }
+.kb-subgroups-bar h2 { margin: 0 auto 0 0; }
+.kb-subgroups-bar h2 small { margin-left: 6px; color: var(--faint); font-weight: 500; }

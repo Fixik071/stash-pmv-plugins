@@ -682,6 +682,7 @@ async function init() {
     stashLang = c.interface.language || "";
     setRatingSystem((c.ui || {}).ratingSystemOptions);
     import("./standings.js").then((m) => m.bestMarkers()).catch(() => {}); // best moments, for the player
+    import("./caps.js").then((m) => m.caps()).catch(() => {}); // what this Stash version can do (0.32 features)
     isLarge(); // (the totals – big library or not – decide how much is loaded on its own; not waited for)
     await import("./tiers.js").then((m) => m.ensureTiers()).catch(() => {}); // the tier badges (Versus standings)
   } catch (e) { /* older Stash or no answer – the browser language decides */ }

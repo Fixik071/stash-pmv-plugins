@@ -49,6 +49,15 @@ const RULES = [
   { label: "Select the newest file in each group", pick: (g) => [g.reduce((a, b) => (ageOf(b) > ageOf(a) ? b : a))] },
 ];
 
+// Stash 0.32 "Select by codec": the copies with one video codec – only in groups that also have another codec,
+// so a group never loses every copy to this rule
+const codecOf = (s) => String((s.files[0] || {}).video_codec || "").toLowerCase();
+const codecRule = (codec) => ({
+  label: "",
+  text: codec.toUpperCase(),
+  pick: (g) => (new Set(g.map(codecOf)).size > 1 ? g.filter((s) => codecOf(s) === codec) : []),
+});
+
 export async function render(main) {
   let distance = store.get("dupDistance", 0);
   let durDiff = store.get("dupDuration", 1);
@@ -258,10 +267,11 @@ export async function render(main) {
     }
     const rules = e.target.closest("[data-rules]");
     if (rules) {
+      const codecs = [...new Set(visibleGroups().filter((g) => new Set(g.map(codecOf)).size > 1).flatMap((g) => g.map(codecOf)))].filter(Boolean).sort();
       menu(
         rules,
-        RULES.map(({ label, pick }) => ({
-          label: t(label),
+        RULES.concat(codecs.map(codecRule)).map(({ label, text, pick }) => ({
+          label: text ? t("Select the {codec} copies in groups with other codecs", { codec: text }) : t(label),
           run: () => {
             picked.clear();
             visibleGroups().forEach((g) => pick(g).forEach((s) => picked.add(s.id)));
