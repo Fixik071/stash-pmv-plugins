@@ -2713,4 +2713,8 @@ export default {
   "{n} of {all} markers shown, {e} with an end": "Pokazano {n} z {all} znaczników, {e} z końcem",
   "Only the markers that are shown are saved as clips.": "Tylko pokazane znaczniki zostaną zapisane jako klipy.",
   "Mix the clips in a random order": "Wymieszaj klipy w losowej kolejności",
+  "Sound in slow motion": "Dźwięk w zwolnionym tempie",
+  "Natural": "Naturalny",
+  "Deeper": "Niższy",
+  "How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts.": "Dźwięk poniżej 1×. „Naturalny” rozciąga go i zachowuje wysokość (przy 0,25× może brzmieć metalicznie), „Niższy” obniża go jak spowolniona płyta – bez rozciągania, więc bez zniekształceń.",
 };

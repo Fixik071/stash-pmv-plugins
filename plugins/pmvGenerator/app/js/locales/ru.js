@@ -2750,4 +2750,8 @@ export default {
   "{n} of {all} markers shown, {e} with an end": "Показано {n} из {all} маркеров, {e} с концом",
   "Only the markers that are shown are saved as clips.": "Сохраняются как клипы только показанные маркеры.",
   "Mix the clips in a random order": "Перемешать клипы в случайном порядке",
+  "Sound in slow motion": "Звук в замедленном режиме",
+  "Natural": "Естественный",
+  "Deeper": "Ниже",
+  "How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts.": "Как звучит звук ниже 1×. «Естественный» растягивает его и сохраняет высоту (при 0,25× может звучать металлически), «Ниже» понижает его, как замедленную пластинку, — без растяжения, а значит без артефактов.",
 };

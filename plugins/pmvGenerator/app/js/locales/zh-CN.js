@@ -2772,4 +2772,8 @@ export default {
   "{n} of {all} markers shown, {e} with an end": "显示 {n} / {all} 个标记，其中 {e} 个有结束时间",
   "Only the markers that are shown are saved as clips.": "只有显示出来的标记会被保存为片段。",
   "Mix the clips in a random order": "把片段按随机顺序混合",
+  "Sound in slow motion": "慢动作时的声音",
+  "Natural": "自然",
+  "Deeper": "更低沉",
+  "How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts.": "低于 1× 时声音如何处理。“自然”会拉长声音并保持音高（0.25× 时可能带金属感），“更低沉”像放慢的唱片一样让音高下降——不拉伸，所以没有杂音。",
 };

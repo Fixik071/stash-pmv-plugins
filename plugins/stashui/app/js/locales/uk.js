@@ -2748,4 +2748,8 @@ export default {
   "{n} of {all} markers shown, {e} with an end": "Показано {n} з {all} маркерів, {e} з кінцем",
   "Only the markers that are shown are saved as clips.": "Зберігаються як кліпи лише показані маркери.",
   "Mix the clips in a random order": "Перемішати кліпи у випадковому порядку",
+  "Sound in slow motion": "Звук у сповільненому режимі",
+  "Natural": "Природний",
+  "Deeper": "Нижчий",
+  "How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts.": "Як звучить звук нижче 1×. «Природний» розтягує його й зберігає висоту (при 0,25× може звучати металево), «Нижчий» понижує його, як сповільнену платівку, — без розтягування, а отже без артефактів.",
 };

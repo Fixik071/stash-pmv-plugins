@@ -344,7 +344,8 @@ export async function render(host, params, query = {}) {
       `<div class="kb-pmenu-sec"><b>${t("Subtitles")}</b>${caps.length ? row("data-sub", -1, t("Off"), on < 0) + [...v.textTracks].map((tt, k) => row("data-sub", k, tt.label, on === k)).join("") : `<span class="kb-pmenu-opt is-disabled"><i></i>${t("No subtitles for this video")}</span>`}</div>` +
       (vr ? `<div class="kb-pmenu-sec"><b>VR</b><div class="kb-pmenu-speeds">${[["", t("Off"), ""], ["180", "180°", ""], ["180sbs", "180° SBS", t("180° side by side")], ["360", "360°", ""], ["360tb", "360° TB", t("360° top/bottom")], ["360sbs", "360° SBS", t("360° side by side")]].map(([m, l, title]) => `<button type="button" class="kb-chip${vr.mode === m ? " is-on" : ""}" data-vr="${m}"${title ? ` title="${esc(title)}"` : ""}>${l}</button>`).join("")}</div></div>` : "") +
       `<div class="kb-pmenu-sec"><b>${t("Speed")}</b><div class="kb-pmenu-speeds">${[0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 2].map((s) => `<button type="button" class="kb-chip${v.playbackRate === s ? " is-on" : ""}" data-rate="${s}">${s}×</button>`).join("")}</div>` +
-      (slowmoSupported() ? `<b title="${esc(t("Below 1× the missing pictures in between are made up on your graphics card – nothing to download"))}">${t("Smooth slow motion")}</b><div class="kb-pmenu-speeds">${[["off", "Off", ""], ["blend", "Blend", "Cross-fades the pictures – cheap, moving things leave a ghost"], ["motion", "Motion", "Follows the movement of the picture (uses the graphics card)"]].map(([m, l, h]) => `<button type="button" class="kb-chip${smoothMode() === m ? " is-on" : ""}" data-smooth="${m}"${h ? ` title="${esc(t(h))}"` : ""}>${t(l)}</button>`).join("")}</div>` : "") + `</div>` +
+      (slowmoSupported() ? `<b title="${esc(t("Below 1× the missing pictures in between are made up on your graphics card – nothing to download"))}">${t("Smooth slow motion")}</b><div class="kb-pmenu-speeds">${[["off", "Off", ""], ["blend", "Blend", "Cross-fades the pictures – cheap, moving things leave a ghost"], ["motion", "Motion", "Follows the movement of the picture (uses the graphics card)"]].map(([m, l, h]) => `<button type="button" class="kb-chip${smoothMode() === m ? " is-on" : ""}" data-smooth="${m}"${h ? ` title="${esc(t(h))}"` : ""}>${t(l)}</button>`).join("")}</div>` : "") +
+      `<b title="${esc(t("How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts."))}">${t("Sound in slow motion")}</b><div class="kb-pmenu-speeds">${[["natural", "Natural"], ["deep", "Deeper"], ["off", "Off"]].map(([m, l]) => `<button type="button" class="kb-chip${slowSound() === m ? " is-on" : ""}" data-slowsound="${m}">${t(l)}</button>`).join("")}</div>` + `</div>` +
       `<div class="kb-pmenu-sec kb-pfx"><b>${t("Picture")}</b>${PFX_ROWS.map(([k, label, lo, hi, unit]) => `<label class="kb-pfx-row" title="${esc(t("Double-click a slider to put it back to normal"))}"><span>${t(label)}</span><output data-pfxv="${k}">${pfxOf()[k]}${unit}</output><input type="range" data-pfx="${k}" min="${lo}" max="${hi}" step="1" value="${pfxOf()[k]}"></label>`).join("")}` +
       `<button type="button" class="kb-pmenu-opt${pfxFlat() ? " is-disabled" : ""}" data-pfxreset>${icon("replay")}${t("Reset the picture")}</button></div>` +
       `<div class="kb-pmenu-sec"><b>${t("Rotate")}</b><div class="kb-pmenu-speeds"><button type="button" class="kb-chip" data-rot="-90" title="${esc(t("Turn the video to the left (Shift+T)"))}">↺ 90°</button><button type="button" class="kb-chip" data-rot="90" title="${esc(t("Turn the video to the right (T)"))}">↻ 90°</button><button type="button" class="kb-chip${rot ? "" : " is-on"}" data-rot="0">${t("Straight")}</button></div></div>` +
@@ -372,8 +373,24 @@ export async function render(host, params, query = {}) {
   // VR: remembered choice for this scene, otherwise guessed from file name and tags
   const vr = createVR($(".kb-screen"), v);
   // Smooth slow motion: below 1× the pictures in between are made up (slowmo.js)
+  const slowSound = () => (["natural", "deep", "off"].includes(prefs.slowSound) ? prefs.slowSound : "natural");
   const smoothMode = () => (["off", "blend", "motion"].includes(prefs.slowSmooth) ? prefs.slowSmooth : "motion");
   const slow = createSlowmo(v, { mode: smoothMode, off: () => !!vr.mode });
+  // The sound below 1×: stretched with the pitch kept (the browser's own way), or letting the pitch sink (a slowed record), or muted
+  let slowMuteBy = null; // { was } when we muted it for the slow motion
+  function applySlowSound() {
+    const slowNow = v.playbackRate < 1;
+    const mode = slowSound();
+    v.preservesPitch = !(slowNow && mode === "deep");
+    if (slowNow && mode === "off" && !slowMuteBy) {
+      slowMuteBy = { was: v.muted };
+      v.muted = true;
+    } else if ((!slowNow || mode !== "off") && slowMuteBy) {
+      v.muted = slowMuteBy.was;
+      slowMuteBy = null;
+    }
+  }
+  v.addEventListener("ratechange", applySlowSound);
   const stopGlow = videoGlow(stage, v);
   const vrSaved = store.get("vrScenes", {});
   if (vr) vr.setMode(x.id in vrSaved ? vrSaved[x.id] : guessVR(f.basename, x.tags));
@@ -439,6 +456,11 @@ export async function render(host, params, query = {}) {
     else if (b.dataset.addmark != null) {
       closeMenu();
       return addMarker();
+    } else if (b.dataset.slowsound) {
+      prefs.slowSound = b.dataset.slowsound;
+      savePrefs();
+      applySlowSound();
+      paintMenu();
     } else if (b.dataset.smooth) {
       prefs.slowSmooth = b.dataset.smooth;
       savePrefs();

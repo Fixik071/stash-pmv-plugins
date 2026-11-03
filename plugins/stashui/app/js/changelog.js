@@ -7,6 +7,14 @@
 
 export const CHANGES = [
   {
+    v: "3.139.0",
+    date: "2026-11-03",
+    items: [
+      ["ui", "Smooth slow motion is much better. The old one only looked ±10 pixels around each block and failed on fast movement (then it just cross-faded). Now the motion is found on 5 smaller and smaller copies of the picture (so even big pans work), forwards and backwards, with windows that overlap, sub-pixel precision at the end, and for every pixel the better of the two guesses wins – where neither fits (cuts, things appearing) it still falls back to the plain blend. The picture is drawn up to 2560 wide (it was 1280). On a made-up test with a panning background and a moving disc the error against the true in-between picture went from about the same as a plain blend to a fifth or less for fast movement (for slow movement from 0.12 to 0.05).", "慢动作平滑效果大幅提升。旧版只在每个块周围 ±10 像素内查找，快速运动时失效（只会交叉淡化）。现在运动是在画面的 5 级逐级缩小的副本上找出来的（所以大幅度的平移也行），分前向和后向两个方向，窗口相互重叠，最后一步精确到亚像素，每个像素取两个估计中更好的那个——两者都不匹配时（剪辑切换、画面中新出现的物体）仍回退到普通混合。画面最高以 2560 宽度绘制（原来是 1280）。在一个背景平移加圆盘移动的模拟测试里，快速运动时与真实中间画面的误差从与普通混合相当降到五分之一以下（慢速运动时从 0.12 降到 0.05）。", "scene/@scene::[data-menubtn]"],
+      ["ui", "New in the speed menu: “Sound in slow motion” – Natural (stretched, keeps the pitch, as before), Deeper (the pitch sinks like a slowed record, no stretching so no metallic artefacts) or Off (muted below 1×). Below 1× the browser's own stretching can only guess – a really clean 4× stretch doesn't exist, “Deeper” is the way without artefacts.", "速度菜单新增“慢动作时的声音”：自然（拉伸并保持音高，和以前一样）、更低沉（音高像放慢的唱片一样下降，不拉伸，所以没有金属感杂音）或关闭（低于 1× 时静音）。低于 1× 时浏览器自带的拉伸只能“猜”——并不存在真正干净的 4 倍拉伸，“更低沉”是没有杂音的办法。", "scene/@scene::[data-menubtn]"],
+    ],
+  },
+  {
     v: "3.138.3",
     date: "2026-11-03",
     items: [

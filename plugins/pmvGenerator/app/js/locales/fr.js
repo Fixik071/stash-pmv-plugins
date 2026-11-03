@@ -2655,4 +2655,8 @@ export default {
   "{n} of {all} markers shown, {e} with an end": "{n} marqueurs sur {all} affichés, {e} avec une fin",
   "Only the markers that are shown are saved as clips.": "Seuls les marqueurs affichés sont enregistrés comme clips.",
   "Mix the clips in a random order": "Mélanger les clips dans un ordre aléatoire",
+  "Sound in slow motion": "Son au ralenti",
+  "Natural": "Naturel",
+  "Deeper": "Plus grave",
+  "How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts.": "Le son sous 1×. « Naturel » l'étire en gardant la hauteur (peut sonner métallique à 0,25×), « Plus grave » le laisse descendre comme un disque ralenti – sans étirement, donc sans artefacts.",
 };

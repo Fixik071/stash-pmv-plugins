@@ -2715,4 +2715,8 @@ export default {
   "{n} of {all} markers shown, {e} with an end": "{all} 個中 {n} 個のマーカーを表示、終了あり {e} 個",
   "Only the markers that are shown are saved as clips.": "表示されているマーカーだけがクリップとして保存されます。",
   "Mix the clips in a random order": "クリップをランダムな順番に混ぜる",
+  "Sound in slow motion": "スローモーション中の音",
+  "Natural": "自然",
+  "Deeper": "低くする",
+  "How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts.": "1× 未満の音の扱い。「自然」は音の高さを保ったまま引き延ばします（0.25× では金属的に聞こえることがあります）。「低くする」は遅くしたレコードのように音程が下がり、引き延ばさないのでノイズが出ません。",
 };

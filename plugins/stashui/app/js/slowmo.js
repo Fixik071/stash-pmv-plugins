@@ -1,9 +1,13 @@
 // Smooth slow motion in the player, no model to download: at a speed below 1× the video only shows a new picture a few
 // times per second, so in between the frames are made up with WebGL.
 //   "blend"  – cross-fades the last two pictures (cheap, but moving things leave a ghost)
-//   "motion" – looks for where each 8×8 block of the picture moved to (block matching on the graphics card), then
-//              pushes both pictures along that motion before blending – where nothing fits (cuts, things appearing)
-//              it falls back to the plain blend.
+//   "motion" – finds where everything moved to and builds the picture in between along that motion:
+//              · a pyramid of smaller and smaller copies of both pictures (5 steps) – the big steps are found on the small
+//                copy, each bigger copy only fixes the rest, so fast pans and big movements work, too
+//              · one motion field per picture (forwards and backwards), 8×8 windows every 4 pixels, smooth and with
+//                sub-pixel precision at the finest step
+//              · for every pixel the better of the two fits wins; where neither fits (cuts, things that appear or
+//                vanish) it falls back to the plain blend
 // The video element keeps playing underneath; the canvas on top is only shown while it's slow and playing.
 
 const VS = `#version 300 es
@@ -14,56 +18,294 @@ void main() {
   gl_Position = vec4(p * 2.0 - 1.0, 0.0, 1.0);
 }`;
 
-// One fragment = one block of the picture: which shift of the previous picture fits the current block best?
-// Result: R,G = shift in pixels of the grid ((v + R) / 2R), B = how badly it fits (0 = perfect, 1 = bad)
-const RANGE = 10;
-const BLOCK = 8;
-const FS_ME = `#version 300 es
+// brightness copy of a picture, half the size of the one it is made from (four taps = a small box filter)
+const FS_LUMA = `#version 300 es
 precision highp float;
-uniform sampler2D prev, cur;
-uniform vec2 meSize;
+uniform sampler2D src;
+uniform vec2 dstSize;
+in vec2 uv;
 out vec4 o;
 float luma(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
 void main() {
-  vec2 base = floor(gl_FragCoord.xy) * ${BLOCK}.0;
-  float best = 1e9;
-  vec2 bv = vec2(0.0);
-  for (int dy = -${RANGE}; dy <= ${RANGE}; dy++) {
-    for (int dx = -${RANGE}; dx <= ${RANGE}; dx++) {
-      float sad = 0.0;
-      for (int j = 0; j < 4; j++) {
-        for (int i = 0; i < 4; i++) {
-          vec2 q = base + vec2(float(i) * 2.0 + 1.0, float(j) * 2.0 + 1.0);
-          sad += abs(luma(texture(cur, q / meSize).rgb) - luma(texture(prev, (q + vec2(float(dx), float(dy))) / meSize).rgb));
-        }
-      }
-      sad += 0.015 * length(vec2(float(dx), float(dy))); // little shifts are likelier than big ones
-      if (sad < best) { best = sad; bv = vec2(float(dx), float(dy)); }
-    }
-  }
-  o = vec4((bv + ${RANGE}.0) / ${RANGE * 2}.0, clamp(best / 4.0, 0.0, 1.0), 1.0);
+  vec2 e = 0.25 / dstSize;
+  float l = luma(texture(src, uv + vec2(-e.x, -e.y)).rgb) + luma(texture(src, uv + vec2(e.x, -e.y)).rgb)
+          + luma(texture(src, uv + vec2(-e.x, e.y)).rgb) + luma(texture(src, uv + vec2(e.x, e.y)).rgb);
+  o = vec4(vec3(l * 0.25), 1.0);
 }`;
 
+// One fragment = one window (8×8 pixels, every 4th pixel): where does the window of picture A sit in picture B?
+// It starts from the motion found one step coarser (×2) and only looks ±R pixels around it. Result: R,G = shift in
+// pixels of this step, B = how well it fits (mean difference, 0 = perfect)
+const FS_FLOW = `#version 300 es
+precision highp float;
+uniform sampler2D tA, tB, up;
+uniform vec2 size;
+uniform float hasUp, refine;
+uniform int R;
+out vec4 o;
+float sad(vec2 c, vec2 v) {
+  float s = 0.0;
+  for (int j = 0; j < 8; j++) {
+    for (int i = 0; i < 8; i++) {
+      vec2 p = c + vec2(float(i) - 3.5, float(j) - 3.5);
+      s += abs(texture(tA, p / size).r - texture(tB, (p + v) / size).r);
+    }
+  }
+  return s / 64.0;
+}
+void main() {
+  vec2 c = (floor(gl_FragCoord.xy) + 0.5) * 4.0;
+  vec2 init = hasUp > 0.5 ? texture(up, c / size).xy * 2.0 : vec2(0.0);
+  vec2 base = floor(init + 0.5);
+  float best = 1e9;
+  float bestSad = 1e9;
+  vec2 bv = vec2(0.0);
+  for (int dy = -R; dy <= R; dy++) {
+    for (int dx = -R; dx <= R; dx++) {
+      vec2 v = base + vec2(float(dx), float(dy));
+      float s = sad(c, v);
+      float cost = s + 0.0035 * length(v - init); // the motion of the neighbours is likelier than a wild jump
+      if (cost < best) { best = cost; bestSad = s; bv = v; }
+    }
+  }
+  float s0 = sad(c, vec2(0.0)); // standing still wins a tie (backgrounds don't wobble)
+  if (s0 <= bestSad * 1.06 + 0.002) { bestSad = s0; bv = vec2(0.0); }
+  if (refine > 0.5) {
+    float l = sad(c, bv + vec2(-1.0, 0.0));
+    float r = sad(c, bv + vec2(1.0, 0.0));
+    float u = sad(c, bv + vec2(0.0, 1.0));
+    float d = sad(c, bv + vec2(0.0, -1.0));
+    float dxx = l - 2.0 * bestSad + r;
+    float dyy = d - 2.0 * bestSad + u;
+    if (dxx > 1e-5 && bestSad <= min(l, r)) bv.x += clamp(0.5 * (l - r) / dxx, -0.5, 0.5);
+    if (dyy > 1e-5 && bestSad <= min(d, u)) bv.y += clamp(0.5 * (d - u) / dyy, -0.5, 0.5);
+  }
+  o = vec4(bv, bestSad, 1.0);
+}`;
+
+// The picture in between: B = shift of a block of the current picture in the previous one, F = shift of a block of the previous
+// picture in the current one. Both give a try at the picture in between; the one whose two halves agree better wins.
 const FS_OUT = `#version 300 es
 precision highp float;
-uniform sampler2D prev, cur, mv;
+uniform sampler2D prev, cur, flowB, flowF;
 uniform float alpha, useMv;
 uniform vec2 meSize;
 in vec2 uv;
 out vec4 o;
 void main() {
-  vec4 m = texture(mv, uv);
-  vec2 d = (m.rg * ${RANGE * 2}.0 - ${RANGE}.0) / meSize * useMv;
-  vec4 a = texture(prev, uv);
-  vec4 b = texture(cur, uv);
-  vec4 plain = mix(a, b, alpha);
-  vec4 p = texture(prev, uv + d * alpha);
-  vec4 c = texture(cur, uv - d * (1.0 - alpha));
-  float fit = (1.0 - m.b) * (1.0 - smoothstep(0.12, 0.35, length(p.rgb - c.rgb))) * useMv;
-  o = mix(plain, mix(p, c, alpha), fit);
+  vec3 a = texture(prev, uv).rgb;
+  vec3 b = texture(cur, uv).rgb;
+  vec3 plain = mix(a, b, alpha);
+  if (useMv < 0.5) { o = vec4(plain, 1.0); return; }
+  vec2 B = texture(flowB, uv).xy / meSize;
+  vec2 F = texture(flowF, uv).xy / meSize;
+  vec3 pA = texture(prev, uv + B * alpha).rgb;
+  vec3 cA = texture(cur, uv - B * (1.0 - alpha)).rgb;
+  vec3 pB = texture(prev, uv - F * alpha).rgb;
+  vec3 cB = texture(cur, uv + F * (1.0 - alpha)).rgb;
+  float eA = length(pA - cA);
+  float eB = length(pB - cB);
+  float wA = 1.0 / (0.01 + eA * eA);
+  float wB = 1.0 / (0.01 + eB * eB);
+  vec3 warp = (wA * mix(pA, cA, alpha) + wB * mix(pB, cB, alpha)) / (wA + wB);
+  float fit = 1.0 - smoothstep(0.07, 0.28, min(eA, eB));
+  o = vec4(mix(plain, warp, fit), 1.0);
 }`;
 
+const LEVELS = 5; // pyramid steps (the finest one is the "motion size" ≤ 640 wide)
+const ME_WIDTH = 640;
+const STEP = 4; // one motion vector per 4×4 pixels of its step
 export const slowmoSupported = () => typeof HTMLVideoElement !== "undefined" && "requestVideoFrameCallback" in HTMLVideoElement.prototype;
+
+// The picture maker, without any video: push(source, time) takes the next picture (video, canvas, image …), render(alpha) draws the
+// picture alpha (0…1) of the way from the one before to the last one. Also used by the player below.
+export function createInterp(canvas) {
+  const gl = canvas.getContext("webgl2", { alpha: false, antialias: false, preserveDrawingBuffer: true });
+  if (!gl) throw new Error("no WebGL2");
+  const floatOk = !!(gl.getExtension("EXT_color_buffer_float") || gl.getExtension("EXT_color_buffer_half_float"));
+  const mk = (type, src) => {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+    return s;
+  };
+  const program = (fs) => {
+    const p = gl.createProgram();
+    gl.attachShader(p, mk(gl.VERTEX_SHADER, VS));
+    gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs));
+    gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+    const u = {};
+    for (let i = 0; i < gl.getProgramParameter(p, gl.ACTIVE_UNIFORMS); i++) {
+      const n = gl.getActiveUniform(p, i).name;
+      u[n] = gl.getUniformLocation(p, n);
+    }
+    return { p, u };
+  };
+  const prog = { luma: program(FS_LUMA), flow: floatOk ? program(FS_FLOW) : null, out: program(FS_OUT) };
+  const vao = gl.createVertexArray();
+  gl.bindVertexArray(vao);
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+  const texture = (w, h, kind) => {
+    const t = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    if (kind === "video") return { tex: t, w: 0, h: 0 };
+    if (kind === "float") gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, w, h, 0, gl.RGBA, gl.HALF_FLOAT, null);
+    else gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, h, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    const fbo = gl.createFramebuffer();
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t, 0);
+    const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    return { tex: t, fbo, w, h, ok };
+  };
+  const bind = (u, name, unit, t) => {
+    gl.activeTexture(gl.TEXTURE0 + unit);
+    gl.bindTexture(gl.TEXTURE_2D, t.tex || t);
+    gl.uniform1i(u[name], unit);
+  };
+  const pass = (target, w, h) => {
+    gl.bindFramebuffer(gl.FRAMEBUFFER, target ? target.fbo : null);
+    gl.viewport(0, 0, w, h);
+    gl.drawArrays(gl.TRIANGLES, 0, 3);
+  };
+
+  const frame = [texture(0, 0, "video"), texture(0, 0, "video")]; // the pictures as they are (full size)
+  let cur = 0; // which of frame[] is the last picture
+  let lum = null; // lum[i][level]: brightness copies of frame[i]
+  let flow = null; // flow[dir][level]: dir 0 = B (blocks of the last picture, searched in the one before), dir 1 = F (the other way)
+  let sizes = []; // [w, h] of every step
+  let vw = 0;
+  let vh = 0;
+  let count = 0; // pictures since the start / the last jump
+  let tPrev = 0;
+  let tCur = 0;
+  let motionOk = floatOk;
+  let pyr = [false, false]; // is the brightness pyramid of frame[i] made?
+
+  function alloc(w, h) {
+    if (lum) [...lum.flat(), ...flow.flat()].forEach((x) => (gl.deleteTexture(x.tex), gl.deleteFramebuffer(x.fbo)));
+    vw = w;
+    vh = h;
+    pyr = [false, false];
+    const w0 = Math.max(16, Math.min(w, ME_WIDTH));
+    const h0 = Math.max(16, Math.round((w0 * h) / w));
+    sizes = [];
+    for (let k = 0; k < LEVELS; k++) sizes.push([Math.max(8, Math.ceil(w0 / 2 ** k)), Math.max(8, Math.ceil(h0 / 2 ** k))]);
+    lum = [0, 1].map(() => sizes.map(([lw, lh]) => texture(lw, lh, "byte")));
+    flow = [0, 1].map(() => sizes.map(([lw, lh]) => texture(Math.ceil(lw / STEP), Math.ceil(lh / STEP), floatOk ? "float" : "byte")));
+    if (floatOk && !flow.flat().every((f) => f.ok)) motionOk = false;
+    const k = Math.min(1, 2560 / w);
+    canvas.width = Math.max(2, Math.round(w * k));
+    canvas.height = Math.max(2, Math.round(h * k));
+    count = 0;
+  }
+  const dims = (src) => [src.videoWidth || src.naturalWidth || src.width, src.videoHeight || src.naturalHeight || src.height];
+
+  // brightness pyramid of frame[i]
+  function pyramid(i) {
+    gl.useProgram(prog.luma.p);
+    for (let k = 0; k < LEVELS; k++) {
+      bind(prog.luma.u, "src", 0, k ? lum[i][k - 1] : frame[i]);
+      gl.uniform2f(prog.luma.u.dstSize, sizes[k][0], sizes[k][1]);
+      pass(lum[i][k], sizes[k][0], sizes[k][1]);
+    }
+  }
+  // motion of both directions, coarse to fine
+  function motion() {
+    gl.useProgram(prog.flow.p);
+    const u = prog.flow.u;
+    for (let dir = 0; dir < 2; dir++) {
+      const a = dir === 0 ? cur : 1 - cur; // the blocks come from picture A, they are searched in picture B
+      const b = 1 - a;
+      for (let k = LEVELS - 1; k >= 0; k--) {
+        bind(u, "tA", 0, lum[a][k]);
+        bind(u, "tB", 1, lum[b][k]);
+        bind(u, "up", 2, k < LEVELS - 1 ? flow[dir][k + 1] : lum[a][k]); // (the coarsest step has nothing coarser: any other texture will do)
+        gl.uniform2f(u.size, sizes[k][0], sizes[k][1]);
+        gl.uniform1f(u.hasUp, k < LEVELS - 1 ? 1 : 0);
+        gl.uniform1f(u.refine, k === 0 ? 1 : 0);
+        gl.uniform1i(u.R, k === LEVELS - 1 ? 4 : 2);
+        pass(flow[dir][k], flow[dir][k].w, flow[dir][k].h);
+      }
+    }
+  }
+
+  // source: the next picture, t: its time in seconds, wantMotion: find the motion now (not needed for "blend")
+  function push(src, t, wantMotion) {
+    const [w, h] = dims(src);
+    if (!w || !h) return;
+    if (w !== vw || h !== vh) alloc(w, h);
+    const jump = count && (t <= tCur || t - tCur > 0.3); // a seek: the old picture doesn't belong to this one
+    const other = 1 - cur;
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, frame[other].tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+    cur = other;
+    pyr[other] = false;
+    tPrev = count && !jump ? tCur : t - 1 / 24;
+    tCur = t;
+    count = jump ? 1 : count + 1;
+    if (count === 1) {
+      // (the first picture after a start or a jump: both sides are the same)
+      gl.bindTexture(gl.TEXTURE_2D, frame[1 - cur].tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
+      count = 2;
+      tPrev = t - 1 / 24;
+    }
+    if (count === 2 && pyr[1 - cur]) pyr[1 - cur] = false; // (both sides are the same picture now)
+    if (wantMotion && motionOk) {
+      for (const i of [cur, 1 - cur])
+        if (!pyr[i]) (pyramid(i), (pyr[i] = true));
+      motion();
+    }
+  }
+  // the share of the way from the previous picture (0) to the last one (1) at time `now`
+  const alphaAt = (now) => Math.min(1, Math.max(0, (now - tCur) / Math.max(0.005, tCur - tPrev)));
+
+  function render(alpha, useMotion) {
+    if (count < 2) return false;
+    const u = prog.out.u;
+    gl.useProgram(prog.out.p);
+    bind(u, "prev", 0, frame[1 - cur]);
+    bind(u, "cur", 1, frame[cur]);
+    const m = useMotion && motionOk;
+    if (m) {
+      bind(u, "flowB", 2, flow[0][0]);
+      bind(u, "flowF", 3, flow[1][0]);
+      gl.uniform2f(u.meSize, sizes[0][0], sizes[0][1]);
+    } else {
+      bind(u, "flowB", 2, frame[cur]);
+      bind(u, "flowF", 3, frame[cur]);
+      gl.uniform2f(u.meSize, 1, 1);
+    }
+    gl.uniform1f(u.alpha, alpha);
+    gl.uniform1f(u.useMv, m ? 1 : 0);
+    pass(null, canvas.width, canvas.height);
+    return true;
+  }
+  return {
+    push,
+    render,
+    alphaAt,
+    get ready() {
+      return count >= 2;
+    },
+    get motionOk() {
+      return motionOk;
+    },
+    reset() {
+      count = 0;
+    },
+    times: () => [tPrev, tCur],
+  };
+}
 
 // video: the <video>; mode(): "off" | "blend" | "motion"; off(): true while something else draws the picture (VR)
 export function createSlowmo(video, { mode, off }) {
@@ -71,111 +313,30 @@ export function createSlowmo(video, { mode, off }) {
   canvas.className = "kb-slowmo";
   canvas.hidden = true;
   video.after(canvas);
-  let gl = null;
-  let prog = null;
-  let tex = [];
-  let mvTex = null;
-  let mvFbo = null;
-  let grid = [0, 0];
-  let vw = 0;
-  let vh = 0;
-  let cur = 0; // which of tex[] holds the current picture
-  let tPrev = 0;
-  let tCur = 0;
-  let frames = 0;
+  let ip = null;
   let running = false;
   let raf = 0;
   let rvfc = 0;
   let dead = !slowmoSupported();
 
-  function program(vs, fs) {
-    const mk = (type, src) => {
-      const s = gl.createShader(type);
-      gl.shaderSource(s, src);
-      gl.compileShader(s);
-      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
-      return s;
-    };
-    const p = gl.createProgram();
-    gl.attachShader(p, mk(gl.VERTEX_SHADER, vs));
-    gl.attachShader(p, mk(gl.FRAGMENT_SHADER, fs));
-    gl.linkProgram(p);
-    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
-    return p;
-  }
-  function texture() {
-    const t = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, t);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    return t;
-  }
   function init() {
-    if (gl || dead) return !dead;
+    if (ip || dead) return !dead;
     try {
-      gl = canvas.getContext("webgl2", { alpha: false, antialias: false, preserveDrawingBuffer: true });
-      if (!gl) throw new Error("no WebGL2");
-      prog = { me: program(VS, FS_ME), out: program(VS, FS_OUT) };
-      tex = [texture(), texture()];
-      mvTex = texture();
-      mvFbo = gl.createFramebuffer();
-      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
-      gl.bindVertexArray(gl.createVertexArray());
+      ip = createInterp(canvas);
       return true;
     } catch (e) {
       console.warn("slow motion", e);
       dead = true;
-      gl = null;
+      ip = null;
       return false;
     }
   }
-  function size() {
-    if (video.videoWidth === vw && video.videoHeight === vh) return;
-    vw = video.videoWidth;
-    vh = video.videoHeight;
-    const k = Math.min(1, 1280 / vw);
-    canvas.width = Math.max(2, Math.round(vw * k));
-    canvas.height = Math.max(2, Math.round(vh * k));
-    grid = [Math.max(2, Math.round(Math.min(vw, 640) / BLOCK)), Math.max(2, Math.round(Math.min(vw, 640) * (vh / vw) / BLOCK))];
-    gl.bindTexture(gl.TEXTURE_2D, mvTex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, grid[0], grid[1], 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, mvFbo);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, mvTex, 0);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    frames = 0;
-  }
-  const bind = (p, name, unit, t) => {
-    gl.activeTexture(gl.TEXTURE0 + unit);
-    gl.bindTexture(gl.TEXTURE_2D, t);
-    gl.uniform1i(gl.getUniformLocation(p, name), unit);
-  };
-
   // a new picture of the video arrived
   function onFrame(now, meta) {
     rvfc = 0;
     if (!running) return;
     try {
-      size();
-      const t = meta && meta.mediaTime != null ? meta.mediaTime : video.currentTime;
-      const jump = frames && (t <= tCur || t - tCur > 0.3); // a seek: the old picture doesn't belong to this one
-      const other = 1 - cur;
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, tex[other]);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
-      cur = other;
-      tPrev = frames && !jump ? tCur : t - 1 / 24;
-      tCur = t;
-      frames = jump ? 1 : frames + 1;
-      if (frames === 1) {
-        // (the first picture after a start or a jump: both sides are the same)
-        gl.bindTexture(gl.TEXTURE_2D, tex[1 - cur]);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
-        frames = 2;
-        tPrev = t - 1 / 24;
-      }
-      if (mode() === "motion") motion();
+      ip.push(video, meta && meta.mediaTime != null ? meta.mediaTime : video.currentTime, mode() === "motion");
       draw();
     } catch (e) {
       console.warn("slow motion", e); // (e.g. a picture the page may not read)
@@ -185,29 +346,9 @@ export function createSlowmo(video, { mode, off }) {
     }
     rvfc = video.requestVideoFrameCallback(onFrame);
   }
-  function motion() {
-    gl.useProgram(prog.me);
-    bind(prog.me, "prev", 0, tex[1 - cur]);
-    bind(prog.me, "cur", 1, tex[cur]);
-    gl.uniform2f(gl.getUniformLocation(prog.me, "meSize"), grid[0] * BLOCK, grid[1] * BLOCK);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, mvFbo);
-    gl.viewport(0, 0, grid[0], grid[1]);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-  }
   function draw() {
-    if (frames < 2) return;
-    const dt = Math.max(0.005, tCur - tPrev);
-    const alpha = Math.min(1, Math.max(0, (video.currentTime - tCur) / dt));
-    gl.useProgram(prog.out);
-    bind(prog.out, "prev", 0, tex[1 - cur]);
-    bind(prog.out, "cur", 1, tex[cur]);
-    bind(prog.out, "mv", 2, mvTex);
-    gl.uniform1f(gl.getUniformLocation(prog.out, "alpha"), alpha);
-    gl.uniform1f(gl.getUniformLocation(prog.out, "useMv"), mode() === "motion" ? 1 : 0);
-    gl.uniform2f(gl.getUniformLocation(prog.out, "meSize"), grid[0] * BLOCK, grid[1] * BLOCK);
-    gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
+    if (!ip.ready) return;
+    ip.render(ip.alphaAt(video.currentTime), mode() === "motion");
     if (canvas.hidden) canvas.hidden = false;
   }
   function loop() {
@@ -224,7 +365,7 @@ export function createSlowmo(video, { mode, off }) {
   function start() {
     if (running || !init()) return;
     running = true;
-    frames = 0;
+    ip.reset();
     rvfc = video.requestVideoFrameCallback(onFrame);
     raf = requestAnimationFrame(loop);
   }
@@ -249,7 +390,7 @@ export function createSlowmo(video, { mode, off }) {
     destroy() {
       stop();
       canvas.remove();
-      gl = null;
+      ip = null;
     },
   };
 }
