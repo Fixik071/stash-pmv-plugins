@@ -2681,4 +2681,8 @@ export default {
   "The saved default tag filter is switched off": "Schaltet den gespeicherten Standard-Tag-Filter aus",
   "Saved as the default tag filter": "Als Standard-Tag-Filter gespeichert",
   "Default tag filter removed": "Standard-Tag-Filter entfernt",
+  "Only for “Look up this page”: a scene its file matches exactly one result for is saved right away with the ticked fields – scenes with several results or none wait for you": "Nur für „Diese Seite nachschlagen“: Findet die Datei einer Szene genau ein Ergebnis, wird es sofort mit den angehakten Feldern gespeichert – Szenen mit mehreren oder keinen Ergebnissen warten auf dich",
+  "One match – save it right away": "Ein Treffer – sofort speichern",
+  "Saved right away: {n}": "Sofort gespeichert: {n}",
+  "No scene had exactly one match": "Keine Szene hatte genau einen Treffer",
 };

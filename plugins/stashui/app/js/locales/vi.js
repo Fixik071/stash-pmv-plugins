@@ -2720,4 +2720,8 @@ export default {
   "The saved default tag filter is switched off": "Tắt bộ lọc thẻ mặc định đã lưu",
   "Saved as the default tag filter": "Đã lưu làm bộ lọc thẻ mặc định",
   "Default tag filter removed": "Đã bỏ bộ lọc thẻ mặc định",
+  "Only for “Look up this page”: a scene its file matches exactly one result for is saved right away with the ticked fields – scenes with several results or none wait for you": "Chỉ cho “Tra cứu trang này”: nếu tệp của một cảnh khớp đúng một kết quả, nó được lưu ngay với các trường đã chọn – cảnh có nhiều hoặc không có kết quả sẽ chờ bạn",
+  "One match – save it right away": "Một kết quả khớp – lưu ngay",
+  "Saved right away: {n}": "Đã lưu ngay: {n}",
+  "No scene had exactly one match": "Không cảnh nào có đúng một kết quả khớp",
 };

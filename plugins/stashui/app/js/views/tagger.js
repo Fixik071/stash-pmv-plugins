@@ -18,7 +18,7 @@ const Q = `query TaggerScenes($f: FindFilterType, $x: SceneFilterType) { findSce
 const guessOf = (s) => String(s.title || ((s.files[0] || {}).basename || "").replace(/\.[A-Za-z0-9]{2,4}$/, "")).replace(/[._]+/g, " ").replace(/\s+/g, " ").trim();
 
 export async function render(main) {
-  const opt = Object.assign({ only: true, make: true, cover: false, organize: true, src: "" }, store.get("tagger", {}));
+  const opt = Object.assign({ only: true, make: true, cover: false, organize: true, auto: false, src: "" }, store.get("tagger", {}));
   const save = () => store.set("tagger", opt);
   let sch;
   let sources;
@@ -45,6 +45,7 @@ export async function render(main) {
       <label class="kb-check"><input type="checkbox" data-o="make"${opt.make ? " checked" : ""}> ${t("Create studios, performers and tags that don't exist yet")}</label>
       <label class="kb-check"><input type="checkbox" data-o="cover"${opt.cover ? " checked" : ""}> ${t("Use the found picture as the cover")}</label>
       <label class="kb-check"><input type="checkbox" data-o="organize"${opt.organize ? " checked" : ""}> ${t("Mark as organized when saved")}</label>
+      <label class="kb-check" title="${t("Only for “Look up this page”: a scene its file matches exactly one result for is saved right away with the ticked fields – scenes with several results or none wait for you")}"><input type="checkbox" data-o="auto"${opt.auto ? " checked" : ""}> ${t("One match – save it right away")}</label>
       <span class="kb-spacer"></span>
       <button type="button" class="kb-btn" data-all>${icon("search")}<span>${t("Look up this page")}</span></button>
     </div>
@@ -187,6 +188,23 @@ export async function render(main) {
     </div>`;
   }
 
+  // Takes result i as the scene's match and shows what would change. A scraper answers a search with a short hit –
+  // the chosen one is fetched in full from its link.
+  async function choose(id, i, hitEl) {
+    const r = rows.get(id);
+    let x = r.results[i];
+    const s = srcOf();
+    const link = linksOf(x)[0];
+    if (s && !s.box && link) {
+      if (hitEl) hitEl.classList.add("is-busy");
+      try {
+        x = (await gql(`query($u: String!) { scrapeSceneURL(url: $u) { ${SF} } }`, { u: link })).scrapeSceneURL || x;
+      } catch (err) { /* the hit itself will do */ }
+    }
+    r.hit = x;
+    paintResults(id);
+  }
+
   async function saveRow(id) {
     const el = rowEl(id);
     const r = rows.get(id);
@@ -246,9 +264,11 @@ export async function render(main) {
           $("[data-count]").textContent = total ? plural(total, "scene", "scenes") : "";
         }, 500);
       } else await load();
+      return true;
     } catch (e) {
       btn.disabled = false;
       errorToast(e, "Saving failed");
+      return false;
     }
   }
 
@@ -258,21 +278,7 @@ export async function render(main) {
     const fd = e.target.closest("[data-find]");
     if (fd && id) return find(id, fd.dataset.find);
     const hit = e.target.closest("[data-hit]");
-    if (hit && id) {
-      const r = rows.get(id);
-      let x = r.results[Number(hit.dataset.hit)];
-      const s = srcOf();
-      const link = linksOf(x)[0];
-      // a scraper answers a name search with a short hit – the chosen one is fetched in full from its link
-      if (s && !s.box && link) {
-        hit.classList.add("is-busy");
-        try {
-          x = (await gql(`query($u: String!) { scrapeSceneURL(url: $u) { ${SF} } }`, { u: link })).scrapeSceneURL || x;
-        } catch (err) { /* the hit itself will do */ }
-      }
-      r.hit = x;
-      return paintResults(id);
-    }
+    if (hit && id) return choose(id, Number(hit.dataset.hit), hit);
     if (e.target.closest("[data-back]") && id) {
       rows.get(id).hit = null;
       return paintResults(id);
@@ -294,11 +300,20 @@ export async function render(main) {
       const b = e.target.closest("[data-all]");
       if (!canByFile(srcOf())) return toast(t("This source can't look up a file – use “Search” with a title, or choose another source."), "error");
       b.disabled = true;
+      let auto = 0;
       for (const s of scenes) {
         if (!rowEl(s.id) || rows.has(s.id)) continue;
-        await find(String(s.id), "file");
+        const id = String(s.id);
+        await find(id, "file");
+        // "One match – save it right away": the file's fingerprints found exactly one scene, so it is taken as is
+        const r = rows.get(id);
+        if (opt.auto && r && !r.error && r.results.length === 1) {
+          await choose(id, 0);
+          if (r.fields && r.fields.length && (await saveRow(id))) auto++;
+        }
       }
       b.disabled = false;
+      if (opt.auto) toast(auto ? t("Saved right away: {n}", { n: plural(auto, "scene", "scenes") }) : t("No scene had exactly one match"), auto ? "ok" : "");
     }
   });
   main.addEventListener("change", (e) => {

@@ -2667,4 +2667,8 @@ export default {
   "The saved default tag filter is switched off": "Désactive le filtre de tags par défaut enregistré",
   "Saved as the default tag filter": "Enregistré comme filtre de tags par défaut",
   "Default tag filter removed": "Filtre de tags par défaut retiré",
+  "Only for “Look up this page”: a scene its file matches exactly one result for is saved right away with the ticked fields – scenes with several results or none wait for you": "Seulement pour « Rechercher cette page » : si le fichier d’une scène correspond à exactement un résultat, il est enregistré tout de suite avec les champs cochés – les scènes avec plusieurs résultats ou aucun vous attendent",
+  "One match – save it right away": "Une correspondance – enregistrer tout de suite",
+  "Saved right away: {n}": "Enregistré tout de suite : {n}",
+  "No scene had exactly one match": "Aucune scène n’avait exactement une correspondance",
 };

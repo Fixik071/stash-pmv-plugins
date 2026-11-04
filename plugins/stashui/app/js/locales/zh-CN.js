@@ -2784,4 +2784,8 @@ export default {
   "The saved default tag filter is switched off": "点击可删除已保存的默认标签筛选",
   "Saved as the default tag filter": "已保存为默认标签筛选",
   "Default tag filter removed": "已移除默认标签筛选",
+  "Only for “Look up this page”: a scene its file matches exactly one result for is saved right away with the ticked fields – scenes with several results or none wait for you": "仅用于“查找本页”：场景文件恰好匹配到一个结果时，立即按勾选的字段保存 – 有多个或没有结果的场景留给你处理",
+  "One match – save it right away": "只有一个匹配 – 立即保存",
+  "Saved right away: {n}": "已立即保存：{n}",
+  "No scene had exactly one match": "没有场景恰好只有一个匹配",
 };

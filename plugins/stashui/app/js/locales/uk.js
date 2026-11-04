@@ -2760,4 +2760,8 @@ export default {
   "The saved default tag filter is switched off": "Вимикає збережений фільтр за тегами за замовчуванням",
   "Saved as the default tag filter": "Збережено як фільтр за тегами за замовчуванням",
   "Default tag filter removed": "Фільтр за тегами за замовчуванням прибрано",
+  "Only for “Look up this page”: a scene its file matches exactly one result for is saved right away with the ticked fields – scenes with several results or none wait for you": "Лише для «Знайти на цій сторінці»: якщо за файлом сцени знайдено рівно один результат, він одразу зберігається з позначеними полями – сцени з кількома результатами або без них чекають на вас",
+  "One match – save it right away": "Один збіг – одразу зберегти",
+  "Saved right away: {n}": "Збережено одразу: {n}",
+  "No scene had exactly one match": "Жодна сцена не мала рівно одного збігу",
 };

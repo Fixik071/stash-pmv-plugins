@@ -2762,4 +2762,8 @@ export default {
   "The saved default tag filter is switched off": "Отключает сохранённый фильтр по тегам по умолчанию",
   "Saved as the default tag filter": "Сохранено как фильтр по тегам по умолчанию",
   "Default tag filter removed": "Фильтр по тегам по умолчанию убран",
+  "Only for “Look up this page”: a scene its file matches exactly one result for is saved right away with the ticked fields – scenes with several results or none wait for you": "Только для «Найти по этой странице»: если по файлу сцены найден ровно один результат, он сразу сохраняется с отмеченными полями – сцены с несколькими результатами или без них ждут вас",
+  "One match – save it right away": "Одно совпадение – сразу сохранить",
+  "Saved right away: {n}": "Сохранено сразу: {n}",
+  "No scene had exactly one match": "Ни у одной сцены не было ровно одного совпадения",
 };

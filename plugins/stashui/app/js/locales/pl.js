@@ -2725,4 +2725,8 @@ export default {
   "The saved default tag filter is switched off": "Wyłącza zapisany domyślny filtr tagów",
   "Saved as the default tag filter": "Zapisano jako domyślny filtr tagów",
   "Default tag filter removed": "Usunięto domyślny filtr tagów",
+  "Only for “Look up this page”: a scene its file matches exactly one result for is saved right away with the ticked fields – scenes with several results or none wait for you": "Tylko dla „Wyszukaj tę stronę”: jeśli plik sceny pasuje do dokładnie jednego wyniku, zostaje on od razu zapisany z zaznaczonymi polami – sceny z kilkoma wynikami lub bez nich czekają na ciebie",
+  "One match – save it right away": "Jedno dopasowanie – zapisz od razu",
+  "Saved right away: {n}": "Zapisano od razu: {n}",
+  "No scene had exactly one match": "Żadna scena nie miała dokładnie jednego dopasowania",
 };
