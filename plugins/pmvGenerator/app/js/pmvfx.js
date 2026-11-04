@@ -165,7 +165,10 @@ export class Compositor {
   drawPic(pic, backdrop, zoom, ox, oy) {
     const s = { x: 0, y: 0, w: this.W, h: this.H };
     const m = { kind: "image", el: pic.el, w: pic.w, h: pic.h };
-    const fit = Math.max(s.w / s.h / (m.w / m.h), m.w / m.h / (s.w / s.h)) <= SNAP ? "cover" : "contain";
+    // (own choice, or the clips': "Whole clip" is contain with the snap to fill, "Fill" is cover)
+    const S = this.S || {};
+    const pick = S.picFitSame ? (S.fit === "cover" ? "cover" : "auto") : S.picFit || "auto";
+    const fit = pick === "cover" || pick === "contain" ? pick : Math.max(s.w / s.h / (m.w / m.h), m.w / m.h / (s.w / s.h)) <= SNAP ? "cover" : "contain";
     if (backdrop && fit === "contain") this.backdrop(15, m, s);
     drawIn(this.g, m, s, fit, zoom, ox, oy, "", false);
   }

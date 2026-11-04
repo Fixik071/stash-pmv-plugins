@@ -7,6 +7,15 @@
 
 export const CHANGES = [
   {
+    v: "3.140.0",
+    date: "2026-11-04",
+    items: [
+      ["pmv", "Fixed: with several songs in a row (e.g. from Plex) the image flash and image overlay stopped after a few song changes. They waited for the new song to reach the time the last picture of the old song had been shown at – now they start again right at the new song. Thanks abverbaerba for the clear report.", "已修复：连续播放多首歌（例如来自 Plex）时，图片闪现和图片叠加会在几次换歌后停止。它们要等新歌的进度追上旧歌最后一张图片的时间——现在换歌后立即重新开始。感谢 abverbaerba 清楚的反馈。"],
+      ["pmv", "Pictures, more control (Style → Pictures): “Same tags and performers as the clips” (or a button that copies them into the fields to edit them), a shape for the images (all / portrait / landscape, or the same as the clips), how a picture fills the screen (automatic / whole / fill, or the same as the clips), the slowest and fastest speed when following the song, “More in loud parts” (longer bursts and more flashes when the song gets loud, with its own upper values), and own tags and performers for the overlay (“Same images as the flash” off) with a button to copy the flash's.", "图片的更多设置（样式 → 图片）：“与片段使用相同的标签和演员”（或用按钮把它们复制到字段里再修改）、图片的形状（全部/竖屏/横屏，或与片段相同）、图片如何铺满画面（自动/完整/填充，或与片段相同）、跟随歌曲时的最慢和最快速度、“响亮部分更多”（歌曲变响时连发更长、闪现更多，并有各自的上限值），以及叠加图片自己的标签和演员（关闭“与闪现使用相同的图片”），并可一键复制闪现的设置。"],
+      ["ui", "New place for plugins: the slot “player.controls” puts buttons into the player's control bar, before the mini player and fullscreen buttons. The plugin gets the scene and the video element (current time, seeking), and the slot is mounted again for every scene. It is for plugins that want a button there instead of reaching into the page – see “For plugin authors” in the README (`stashui.has(\"slot:player.controls\")`). Asked for by hookemhorns.", "插件的新位置：“player.controls”插槽可以把按钮放进播放器的控制栏，位于迷你播放器和全屏按钮之前。插件会拿到当前场景和 video 元素（当前时间、跳转），每个场景都会重新挂载一次。适合想在这里放按钮、而不是去改页面结构的插件——详见 README 的“For plugin authors”（`stashui.has(\"slot:player.controls\")`）。由 hookemhorns 提出。"],
+    ],
+  },
+  {
     v: "3.139.1",
     date: "2026-11-04",
     items: [

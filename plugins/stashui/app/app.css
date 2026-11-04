@@ -1712,6 +1712,9 @@ html.kb-glass .kb-xpiece { border: 1px solid rgba(255, 255, 255, .12); }
 .kb-xbar { display: flex; flex-direction: column; gap: 8px; margin: 0 0 12px; }
 .kb-xtool, .kb-xbulk { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; }
 .kb-xslot { min-width: 0; }
+.kb-xctrl { display: inline-flex; align-items: center; gap: 4px; }
+.kb-xctrl:empty { display: none; }
+.kb-xctrl > .kb-xslot { display: inline-flex; align-items: center; gap: 4px; }
 .kb-xhead { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 0; }
 .kb-xhome { display: block; }
 .kb-xhomesec { margin: 0 0 var(--s-section, 36px); }

@@ -7,7 +7,7 @@
 //     stashui.addRoute({ path: "library/*", title, overlay, render(el, { params, rest, query, signal }) → cleanup });
 //     stashui.addNavItem({ id, label, icon, route | href, group, place, count });
 //     stashui.addTheme({ id, name, colors: { "--pink": "#ff7a6b", "--bg": … }, css: "theme.css", glass: false });
-//     stashui.addSlot("scene.info", { id, title, match(ctx), mount(el, ctx) → cleanup });
+//     stashui.addSlot("scene.info", { id, title, match(ctx), mount(el, ctx) → cleanup });   // also "player.controls": a spot in the player's control bar
 //     stashui.ui / t / addStrings / gql / store / on / go
 //     stashui.play([{ id, title, thumb }], index) → { add(items) }  // next/previous in the player follow this list
 //   }
@@ -33,7 +33,7 @@ const SETUP_TIMEOUT = 6000;
 
 // Where a slot can sit (ctx fields are listed in the README, "For plugin authors")
 export const SLOT_NAMES = [
-  "list.bar", "list.toolbar", "bulk.actions", "scene.info", "scene.menu",
+  "list.bar", "list.toolbar", "bulk.actions", "scene.info", "scene.menu", "player.controls",
   "performer.header", "studio.header", "tag.header", "gallery.header", "home.section", "settings.section",
 ];
 const FEATURES = new Set([

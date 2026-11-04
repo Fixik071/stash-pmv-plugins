@@ -86,6 +86,20 @@ const DEFAULTS = {
   picOverlayAmt: 35, // how solid it is (%)
   picOverlayLen: 4, // for this many beats
   picOverlayPct: 30, // share of bars that get an overlay
+  picSame: false, // the images are picked with the tags and performers of the clips
+  picShape: "all", // shape of the images: all | portrait | landscape
+  picShapeSame: false, // ... the same as the clip shape
+  picFit: "auto", // how a picture fills the frame: auto | contain (whole) | cover (fill)
+  picFitSame: false, // ... the same as the clips
+  picRateMin: 1, // "follow the song": slowest and fastest (pictures per beat)
+  picRateMax: 4,
+  picFlashLoud: false, // louder parts: longer bursts, more flashes
+  picFlashLenMax: 6, // burst length (beats) in the loudest parts
+  picFlashPctMax: 60, // how often (%) in the loudest parts
+  picOverSame: true, // the overlay takes its pictures from the same images as the flash
+  picOverTags: [],
+  picOverXtags: [],
+  picOverPerfs: [],
   look: "none", // color look: none | warm | pink | cold | bw | noir | vivid | custom
   lookAmt: 100, // strength of the look (%)
   lookColor: "#ff4d94", // the tint of the "custom" look
@@ -235,7 +249,7 @@ export function render(main) {
   if (!Array.isArray(S.folders)) S.folders = [];
   if (!Array.isArray(S.xfolders)) S.xfolders = [];
   if (!Array.isArray(S.rgPicks)) S.rgPicks = [];
-  for (const k of ["picTags", "picXtags", "picPerfs"]) if (!Array.isArray(S[k])) S[k] = [];
+  for (const k of ["picTags", "picXtags", "picPerfs", "picOverTags", "picOverXtags", "picOverPerfs"]) if (!Array.isArray(S[k])) S[k] = [];
   const save = () => store.set("pmvgen", S);
   let song = null; // beat detection result + name
   let run = null; // running generator
@@ -509,19 +523,42 @@ export function render(main) {
           ${secHead("pics")}
           <div class="kb-pmvg-pane" id="pmvg-pane-pics" data-pane="pics">
             <p class="kb-hint">Still images from your library, on top of the clips – in a tempo of their own. Needs images in Stash; the clips can be videos only.</p>
-            <span class="kb-lab-t">Which images <small>– none picked = all of them</small></span>
-            <div class="kb-pmvg-tags" data-pictags></div>
-            <div class="kb-pmvg-perfs" data-picperfs data-perfwrap></div>
+            <div class="kb-pmvg-opts">${sw("picSame", "Same tags and performers as the clips", "The images are picked with the tags and performers you chose for the clips (What)")}</div>
+            <div data-picwho>
+              <span class="kb-lab-t">Which images <small>– none picked = all of them</small></span>
+              <div class="kb-pmvg-tags" data-pictags></div>
+              <div class="kb-pmvg-perfs" data-picperfs data-perfwrap></div>
+              <button class="kb-btn is-ghost" type="button" data-piccopy title="Puts the tags and performers of the clips into the fields above so that you can change them">Copy the tags and performers of the clips here</button>
+            </div>
+            <div data-picshapewho>
+              <span class="kb-lab-t">Shape of the images</span>
+              <div class="kb-seg" data-seg="picShape"><button type="button" data-v="all">All</button><button type="button" data-v="portrait">Portrait only</button><button type="button" data-v="landscape">Landscape only</button></div>
+            </div>
+            <div class="kb-pmvg-opts">${sw("picShapeSame", "Same shape as the clips", "Uses the clip shape from What")}</div>
+            <div data-picfitwho>
+              <span class="kb-lab-t">How a picture fills the screen</span>
+              <div class="kb-seg" data-seg="picFit"><button type="button" data-v="auto" title="Fills the screen when its shape is close, else the whole picture with a blurred border">Automatic</button><button type="button" data-v="contain" title="The whole picture, with a blurred border">Whole picture</button><button type="button" data-v="cover" title="Fills the screen, the edges get cropped">Fill the screen</button></div>
+            </div>
+            <div class="kb-pmvg-opts">${sw("picFitSame", "Same fit as the clips", "Uses the clip fit from Picture & frame")}</div>
             <div class="kb-pmvg-group">
               <div class="kb-pmvg-grouphead"><b>Image flash</b><small>Pictures cover the clips for a moment</small></div>
               <div class="kb-pmvg-opts">${sw("picFlash", "Image flash", "Pictures flash up on the beat – up to eight per beat")}</div>
               <div data-flashbox>
                 <span class="kb-lab-t">Speed <small>– pictures per beat</small></span>
                 <div class="kb-seg" data-seg="picFlashRate"><button type="button" data-v="auto" title="Calm parts one per beat, louder parts two, loud parts four">Follow the song</button><button type="button" data-v="1">1</button><button type="button" data-v="2">2</button><button type="button" data-v="4">4</button><button type="button" data-v="8">8</button></div>
+                <div data-ratebox>
+                  <label class="kb-pmvg-range" title="Following the song: the speed in the calm parts"><span>${icon("sliders")}Slowest</span><input type="range" min="1" max="8" step="1" data-r="picRateMin" aria-label="Slowest speed in pictures per beat"><output data-ro="picRateMin" data-unit=" per beat"></output></label>
+                  <label class="kb-pmvg-range" title="Following the song: the speed in the loudest parts"><span>${icon("sliders")}Fastest</span><input type="range" min="1" max="8" step="1" data-r="picRateMax" aria-label="Fastest speed in pictures per beat"><output data-ro="picRateMax" data-unit=" per beat"></output></label>
+                </div>
                 <span class="kb-lab-t">How</span>
                 <div class="kb-seg" data-seg="picFlashMode"><button type="button" data-v="single" title="One picture, as long as one step of the speed above">One picture</button><button type="button" data-v="burst" title="Several pictures in a row, as many as fit in the burst length">A burst</button><button type="button" data-v="both">Both</button></div>
                 <label class="kb-pmvg-range" title="How long a burst of pictures lasts"><span>${icon("sliders")}Burst length</span><input type="range" min="1" max="8" step="1" data-r="picFlashLen" aria-label="Burst length in beats"><output data-ro="picFlashLen" data-unit=" beats"></output></label>
                 <label class="kb-pmvg-range" title="How many of the beats start a flash – the rest of the time only the clips play"><span>${icon("sliders")}How often</span><input type="range" min="5" max="100" step="5" data-r="picFlashPct" aria-label="How often pictures flash"><output data-ro="picFlashPct"></output></label>
+                <div class="kb-pmvg-opts">${sw("picFlashLoud", "More in loud parts", "Longer bursts and more flashes when the song gets loud – the two sliders above are for the calm parts")}</div>
+                <div data-loudbox>
+                  <label class="kb-pmvg-range" title="Burst length in the loudest parts"><span>${icon("sliders")}Burst length, loud</span><input type="range" min="1" max="16" step="1" data-r="picFlashLenMax" aria-label="Burst length in loud parts"><output data-ro="picFlashLenMax" data-unit=" beats"></output></label>
+                  <label class="kb-pmvg-range" title="How many of the beats start a flash in the loudest parts"><span>${icon("sliders")}How often, loud</span><input type="range" min="5" max="100" step="5" data-r="picFlashPctMax" aria-label="How often pictures flash in loud parts"><output data-ro="picFlashPctMax"></output></label>
+                </div>
               </div>
             </div>
             <div class="kb-pmvg-group">
@@ -531,6 +568,13 @@ export function render(main) {
                 <label class="kb-pmvg-range" title="How solid the picture is"><span>${icon("sliders")}Opacity</span><input type="range" min="10" max="90" step="5" data-r="picOverlayAmt" aria-label="Opacity of the overlay"><output data-ro="picOverlayAmt"></output></label>
                 <label class="kb-pmvg-range" title="How long a picture stays"><span>${icon("sliders")}Length</span><input type="range" min="1" max="16" step="1" data-r="picOverlayLen" aria-label="Length of the overlay in beats"><output data-ro="picOverlayLen" data-unit=" beats"></output></label>
                 <label class="kb-pmvg-range" title="How many of the bars get an overlay"><span>${icon("sliders")}How often</span><input type="range" min="5" max="100" step="5" data-r="picOverlayPct" aria-label="How often there is an overlay"><output data-ro="picOverlayPct"></output></label>
+                <div class="kb-pmvg-opts">${sw("picOverSame", "Same images as the flash", "Off = the overlay has its own tags and performers – e.g. a caption the rest is built around")}</div>
+                <div data-overwho>
+                  <span class="kb-lab-t">Images for the overlay <small>– none picked = all of them</small></span>
+                  <div class="kb-pmvg-tags" data-overtags></div>
+                  <div class="kb-pmvg-perfs" data-overperfs data-perfwrap></div>
+                  <button class="kb-btn is-ghost" type="button" data-overcopy title="Puts the tags and performers of the image flash into the fields above">Copy the ones of the image flash here</button>
+                </div>
               </div>
             </div>
           </div>
@@ -765,6 +809,12 @@ export function render(main) {
     ["[data-clipvol]", "[data-seg=voiceMode]", "[data-voicewhen]"].forEach((q) => $(q).classList.toggle("is-dim", !S.fx.voice));
     $("[data-flashbox]").classList.toggle("is-dim", !S.picFlash);
     $("[data-overlaybox]").classList.toggle("is-dim", !S.picOverlay);
+    $("[data-picwho]").hidden = !!S.picSame;
+    $("[data-picshapewho]").hidden = !!S.picShapeSame;
+    $("[data-picfitwho]").hidden = !!S.picFitSame;
+    $("[data-ratebox]").hidden = S.picFlashRate !== "auto";
+    $("[data-loudbox]").hidden = !S.picFlashLoud;
+    $("[data-overwho]").hidden = !!S.picOverSame;
     $("[data-voicehint]").textContent = !S.fx.voice
       ? "Clip audio is off – only the song can be heard."
       : S.voiceMode === "always"
@@ -987,6 +1037,26 @@ export function render(main) {
       save();
     },
   });
+  const mountOverTags = () => tagPicker(fresh("[data-overtags]"), {
+    include: S.picOverTags,
+    exclude: S.picOverXtags,
+    allowExclude: true,
+    placeholder: "Tags of the overlay images (optional) – right-click excludes",
+    onChange: (inc, exc) => {
+      S.picOverTags = inc;
+      S.picOverXtags = exc;
+      save();
+    },
+  });
+  const mountOverPerfs = () => perfPicker(fresh("[data-overperfs]"), {
+    include: S.picOverPerfs,
+    any: true,
+    placeholder: "Performers in the overlay images (optional)",
+    onChange: (ids) => {
+      S.picOverPerfs = ids;
+      save();
+    },
+  });
   // Tag stages: one tag picker per stage; the last stage is for drops and the finale
   function paintStages() {
     const host = $("[data-stages]");
@@ -1036,6 +1106,31 @@ export function render(main) {
   mountPerfs();
   mountPicTags();
   mountPicPerfs();
+  mountOverTags();
+  mountOverPerfs();
+  // Copy buttons of the Pictures section
+  main.addEventListener("click", (e) => {
+    if (e.target.closest("[data-piccopy]")) {
+      S.picTags = [...S.tags];
+      S.picXtags = [...S.xtags];
+      S.picPerfs = [...S.perfs];
+      save();
+      mountPicTags();
+      mountPicPerfs();
+      hasPerformers().then((ok) => alive && main.querySelectorAll("[data-perfwrap]").forEach((el) => (el.hidden = !ok)));
+      toast("Copied the tags and performers of the clips");
+    }
+    if (e.target.closest("[data-overcopy]")) {
+      S.picOverTags = [...S.picTags];
+      S.picOverXtags = [...S.picXtags];
+      S.picOverPerfs = [...S.picPerfs];
+      save();
+      mountOverTags();
+      mountOverPerfs();
+      hasPerformers().then((ok) => alive && main.querySelectorAll("[data-perfwrap]").forEach((el) => (el.hidden = !ok)));
+      toast("Copied the ones of the image flash");
+    }
+  });
   hasPerformers().then((ok) => alive && main.querySelectorAll("[data-perfwrap]").forEach((el) => (el.hidden = !ok)));
 
   // ---------- RedGifs: niches, tags and creators as chips, with live suggestions ----------
@@ -2929,7 +3024,9 @@ class Generator {
     this.lastCut = -99;
     this.cuts = 0;
     this.events = []; // half beats: stutter, strobe, pictures
-    this.pics = S.picFlash || S.picOverlay ? { ready: [], spent: [], page: 1, seed: Math.floor(Math.random() * 1e8), busy: false, dead: false, flashUntil: -1, overUntil: -1 } : null;
+    const picPool = (kind) => ({ kind, ready: [], spent: [], page: 1, seed: Math.floor(Math.random() * 1e8), busy: false, dead: false });
+    // (main = the images of the flash – and of the overlay, unless that has its own; flashUntil/overUntil are song times)
+    this.pics = S.picFlash || S.picOverlay ? { main: picPool("main"), over: S.picOverlay && !S.picOverSame ? picPool("over") : null, flashUntil: -1, overUntil: -1 } : null;
     this.st = { beatT: -9, beatAmt: 0, energy: 0 };
     this.paused = false;
     this.done = false;
@@ -4382,6 +4479,9 @@ class Generator {
     this.lastCut = this.bi - 1;
     this.layoutBeat = this.bi;
     this.events = [];
+    // (the times of the last flash/overlay are song times: after a song change they would keep the pictures away
+    // until the new song had reached the old one's time)
+    if (this.pics) this.pics.flashUntil = this.pics.overUntil = -1;
   }
 
   // The song's sound from position `at` (seconds); at its end: the next song, or the end of the show
@@ -4884,12 +4984,24 @@ class Generator {
   // ---------- Pictures: image flash and image overlay ----------
 
   // Fills the supply with pictures of the library (one page of 24 at a time, shrunk to 1600 px so that they stay light)
-  async topUpPics() {
+  topUpPics(pool) {
     const P = this.pics;
+    if (!P) return;
+    (pool ? [pool] : [P.main, P.over]).forEach((Q) => Q && this.fillPics(Q));
+  }
+  async fillPics(P) {
     if (!P || P.busy || P.dead || this.done) return;
     P.busy = true;
     try {
-      const f = buildFilter("image", Object.assign({}, this.S, { tags: this.S.picTags, xtags: this.S.picXtags, tagMode: "any", perfs: this.S.picPerfs, perfMode: "any", mainTags: [], fav: false, minRating: "0", maxRes: "any", shape: "all", folders: [], xfolders: [] }), null);
+      const S = this.S;
+      // which images: the overlay's own, the clips' (same), or the ones picked here
+      const who = P.kind === "over"
+        ? { tags: S.picOverTags, xtags: S.picOverXtags, tagMode: "any", perfs: S.picOverPerfs, perfMode: "any" }
+        : S.picSame
+        ? { tags: S.tags, xtags: S.xtags, tagMode: S.tagMode, perfs: S.perfs, perfMode: S.perfMode }
+        : { tags: S.picTags, xtags: S.picXtags, tagMode: "any", perfs: S.picPerfs, perfMode: "any" };
+      const shape = S.picShapeSame ? S.shape : S.picShape;
+      const f = buildFilter("image", Object.assign({}, S, who, { mainTags: [], fav: false, minRating: "0", maxRes: "any", shape: shape === "portrait" || shape === "landscape" ? shape : "all", folders: [], xfolders: [] }), null);
       const q = `query($f: FindFilterType, $x: ImageFilterType) { r: findImages(filter: $f, image_filter: $x) { count images { id paths { image } visual_files { __typename ... on ImageFile { width height } } } } }`;
       const d = await gql(q, { f: { per_page: 24, page: P.page, sort: "random_" + P.seed }, x: f });
       if (P.page * 24 >= d.r.count) {
@@ -4926,10 +5038,12 @@ class Generator {
   }
 
   // A picture to show: a new one when there is one, else one that was shown before
-  takePic() {
-    const P = this.pics;
-    if (!P || P.dead) return null;
-    if (P.ready.length < 10) this.topUpPics();
+  takePic(kind) {
+    const Q = this.pics;
+    if (!Q) return null;
+    const P = kind === "over" && Q.over ? Q.over : Q.main;
+    if (P.dead) return null;
+    if (P.ready.length < 10) this.topUpPics(P);
     if (!P.ready.length) return P.spent.length ? P.spent[Math.floor(Math.random() * P.spent.length)] : null;
     const pic = P.ready.splice(Math.floor(Math.random() * P.ready.length), 1)[0];
     P.spent.push(pic);
@@ -4943,11 +5057,17 @@ class Generator {
     const P = this.pics;
     const beats = this.song.beats;
     const t0 = beats[k];
-    if (S.picFlash && t0 >= P.flashUntil && Math.random() * 100 < (+S.picFlashPct || 0)) {
-      const rate = S.picFlashRate === "auto" ? (e > 0.72 ? 4 : e > 0.4 ? 2 : 1) : Math.max(1, Number(S.picFlashRate) || 1);
+    // "More in loud parts": from the calm values (the sliders) towards the loud ones, as the song gets louder
+    const loud = S.picFlashLoud ? Math.max(0, Math.min(1, (e - 0.25) / 0.5)) : 0;
+    const toward = (calm, top) => (+calm || 0) + ((+top || 0) - (+calm || 0)) * loud;
+    if (S.picFlash && t0 >= P.flashUntil && Math.random() * 100 < toward(S.picFlashPct, Math.max(+S.picFlashPct || 0, +S.picFlashPctMax || 0))) {
+      const lo = Math.max(1, Math.round(+S.picRateMin || 1));
+      const hi = Math.max(lo, Math.round(+S.picRateMax || 4));
+      const rate = S.picFlashRate === "auto" ? (e > 0.72 ? hi : e > 0.4 ? Math.round(Math.sqrt(lo * hi)) : lo) : Math.max(1, Number(S.picFlashRate) || 1);
       const step = len / rate;
       const burst = S.picFlashMode === "burst" || (S.picFlashMode !== "single" && Math.random() < 0.5);
-      const n = burst ? Math.max(1, Math.round((+S.picFlashLen || 2) * rate)) : 1;
+      const burstLen = toward(S.picFlashLen || 2, Math.max(+S.picFlashLen || 2, +S.picFlashLenMax || 0));
+      const n = burst ? Math.max(1, Math.round(burstLen * rate)) : 1;
       for (let i = 0; i < n; i++) this.events.push({ t: t0 + i * step, type: "pic", kind: "flash", dur: step * 0.96 });
       P.flashUntil = t0 + n * step;
       this.events.sort((a, b) => a.t - b.t);
@@ -4966,7 +5086,7 @@ class Generator {
   picFire(ev, t) {
     const rest = ev.t + ev.dur - this.pos(); // (a frame that came late: what is over by now isn't shown)
     if (rest <= 0.01) return;
-    const pic = this.takePic();
+    const pic = this.takePic(ev.kind);
     if (!pic) return;
     if (ev.kind === "flash") this.comp.picFlash(pic, t, t + rest);
     else this.comp.picOver(pic, t, t + rest, Math.max(0.1, Math.min(0.9, (+this.S.picOverlayAmt || 35) / 100)));
@@ -5153,10 +5273,13 @@ class Generator {
     this.ready.forEach((m) => this.release(m));
     this.ready = [];
     if (this.pics) {
-      this.pics.dead = true;
-      [...this.pics.ready, ...this.pics.spent].forEach((p) => p.el.close && p.el.close());
-      this.pics.ready = [];
-      this.pics.spent = [];
+      [this.pics.main, this.pics.over].forEach((Q) => {
+        if (!Q) return;
+        Q.dead = true;
+        [...Q.ready, ...Q.spent].forEach((p) => p.el.close && p.el.close());
+        Q.ready = [];
+        Q.spent = [];
+      });
     }
   }
   async finish(early) {

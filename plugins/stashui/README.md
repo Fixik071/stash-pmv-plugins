@@ -173,6 +173,7 @@ The theme appears with the colour presets in Settings → Appearance (`stashui.h
 | `bulk.actions` | the selection bar | `kind`, `ids()` (the selection as it is now), `pieces()` |
 | `scene.info` | a foldable section (`title`) in the player's info bar | `id`, `item` (the scene), `video`, `time()` |
 | `scene.menu` | the player's gear menu | the same |
+| `player.controls` | a spot in the player's control bar, before the mini player and fullscreen buttons – the slot is mounted again for every scene (the player is built anew), and `signal` aborts when the player moves on | `id`, `item` / `scene` (the scene), `video` (the `<video>` element: `currentTime`, seeking …), `time()` |
 | `performer.header`, `studio.header`, `tag.header`, `gallery.header` | in the page header, below the facts | `page`, `id`, `item` |
 | `home.section` | a section on the home page (`title`), filled when it is scrolled to | `page` |
 | `settings.section` | a settings screen under Settings → **Plugins** (`title`) | `page` |

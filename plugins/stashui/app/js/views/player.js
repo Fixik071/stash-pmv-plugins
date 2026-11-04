@@ -167,6 +167,7 @@ export async function render(host, params, query = {}) {
             <button class="kb-btn is-icon is-ghost" data-mute aria-label="${t("Sound on/off (M)")}" title="${t("Sound on/off (M)")}"></button>
             <input class="kb-vol" type="range" min="0" max="1" step="0.02" data-vol aria-label="${t("Volume")}">
             <span class="kb-pmenu-wrap"><button class="kb-btn is-icon is-ghost" data-menubtn aria-label="${t("Quality, subtitles, speed")}" title="${t("Quality, subtitles, speed")}">${icon("sliders")}</button><div class="kb-pmenu" data-menu hidden></div></span>
+            <span class="kb-xctrl" data-xctrl></span>
             <button class="kb-btn is-icon is-ghost" data-mini aria-label="${t("Mini player – keeps playing while you browse (X)")}" title="${t("Mini player – keeps playing while you browse (X)")}">${icon("pip")}</button>
             <button class="kb-btn is-icon is-ghost" data-fs aria-label="${t("Fullscreen (F)")}" title="${t("Fullscreen (F)")}">${icon("expand")}</button>
           </div>
@@ -1377,19 +1378,22 @@ export async function render(host, params, query = {}) {
     savePrefs();
   }, true); // "toggle" doesn't bubble – caught on the way down
   // Sections of extension plugins in the info bar (slot scene.info) and entries in the menu (scene.menu)
-  const slotCtx = () => ({ page: "scene", kind: "scene", id: x.id, item: x, video: v, time: () => v.currentTime });
+  const slotCtx = () => ({ page: "scene", kind: "scene", id: x.id, item: x, scene: x, video: v, time: () => v.currentTime });
   let infoSlots = null;
   function mountInfo() {
     if (infoSlots) infoSlots.destroy();
     infoSlots = mountSlots("scene.info", side.querySelector("[data-xinfo]"), slotCtx(), { wrap: true, reload: () => plc && plc.refresh && plc.refresh() });
   }
   mountInfo();
+  // Buttons of extension plugins in the control bar (slot player.controls) – the player is built again for every scene, so they are too
+  const ctrlSlots = mountSlots("player.controls", stage.querySelector("[data-xctrl]"), slotCtx());
   const plc = bindPlacard(side, "scene", () => x, {
     refresh: async () => {
       x = await getScene(x.id);
       side.innerHTML = placardHtml("scene", x) + '<div class="kb-upnext kb-markers" data-markers></div><div class="kb-upnext kb-queuebox" data-queuebox></div><div class="kb-upnext" data-upnext></div><div class="kb-upnext kb-similar" data-similar></div><div class="kb-upnext kb-xinfo" data-xinfo></div>';
       mountInfo();
       menuSlots && menuSlots.set({ item: x });
+      ctrlSlots.set({ item: x, scene: x });
       paintMarkers();
       paintQueue();
       paintUpnext();
@@ -2015,6 +2019,7 @@ export async function render(host, params, query = {}) {
     if (stage._rotRO) stage._rotRO.disconnect();
     if (infoSlots) infoSlots.destroy();
     if (menuSlots) menuSlots.destroy();
+    ctrlSlots.destroy();
     document.removeEventListener("keydown", onKey);
     clearInterval(loopT);
     window.removeEventListener("stash:queue-changed", onQueue);
