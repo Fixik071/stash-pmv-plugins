@@ -7,6 +7,14 @@
 
 export const CHANGES = [
   {
+    v: "3.140.1",
+    date: "2026-11-04",
+    items: [
+      ["ui", "Saved filters in the menu: the ones from Stash can be renamed now – right-click the name or use the little pencil that shows when you point at it. The filter is read again and saved with the new name, nothing else in it changes.", "菜单中的“已保存的筛选器”：来自 Stash 的筛选器现在可以重命名——右键点击名称，或使用指向它时出现的小铅笔。会重新读取整个筛选器并以新名称保存，其他内容不变。"],
+      ["ui", "The studio logo in a scene's info bar follows the “Studio logo: size” setting (Settings → General) now, like the logos on the cards.", "场景信息栏中的工作室标志现在会跟随“工作室标志：大小”设置（设置 → 常规），与卡片上的标志一致。"],
+    ],
+  },
+  {
     v: "3.140.0",
     date: "2026-11-04",
     items: [

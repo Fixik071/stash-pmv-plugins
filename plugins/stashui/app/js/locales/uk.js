@@ -2752,4 +2752,6 @@ export default {
   "Natural": "Природний",
   "Deeper": "Нижчий",
   "How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts.": "Як звучить звук нижче 1×. «Природний» розтягує його й зберігає висоту (при 0,25× може звучати металево), «Нижчий» понижує його, як сповільнену платівку, — без розтягування, а отже без артефактів.",
+  "Rename the saved filter": "Перейменувати збережений фільтр",
+  "Renamed": "Перейменовано",
 };

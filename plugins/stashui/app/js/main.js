@@ -554,11 +554,28 @@ async function renderSaved() {
   try {
     const [{ loadPlaylists, linkOf }, { loadStashFilters }] = await Promise.all([import("./playlists.js"), import("./stashfilters.js")]);
     const [pls, sc, im] = await Promise.all([loadPlaylists().catch(() => []), loadStashFilters("scene").catch(() => []), loadStashFilters("image").catch(() => [])]);
-    const row = (href, name, hint) => `<div class="kb-tree-row" style="--d:0"><span class="kb-tree-caret"></span><a href="${esc(href)}" title="${esc(hint)}">${esc(name)}</a></div>`;
+    // (Stash's own filters have a pencil: right-click does the same – for touch screens, where there is no hover)
+    const row = (href, name, hint, sfId) =>
+      `<div class="kb-tree-row" style="--d:0"><span class="kb-tree-caret"></span><a href="${esc(href)}" title="${esc(hint)}"${sfId ? ` data-sfid="${esc(sfId)}" data-sfname="${esc(name)}"` : ""}>${esc(name)}</a>${sfId ? `<button type="button" class="kb-tree-edit" data-sfrename="${esc(sfId)}" data-sfname="${esc(name)}" aria-label="${esc(t("Rename"))}" title="${esc(t("Rename"))}">${icon("edit")}</button>` : ""}</div>`;
     const html =
       pls.map((p) => row(linkOf(p), p.name, t("Playlist"))).join("") +
-      sc.map((x) => row(`#/scenes?sf=${encodeURIComponent(x.id)}`, x.name, t("Scenes"))).join("") +
-      im.map((x) => row(`#/images?sf=${encodeURIComponent(x.id)}`, x.name, t("Images"))).join("");
+      sc.map((x) => row(`#/scenes?sf=${encodeURIComponent(x.id)}`, x.name, t("Scenes"), x.id)).join("") +
+      im.map((x) => row(`#/images?sf=${encodeURIComponent(x.id)}`, x.name, t("Images"), x.id)).join("");
+    if (!box._sfBound) {
+      box._sfBound = true;
+      box.addEventListener("click", (e) => {
+        const b = e.target.closest("[data-sfrename]");
+        if (!b) return;
+        e.preventDefault();
+        renameSaved(b.dataset.sfrename, b.dataset.sfname);
+      });
+      box.addEventListener("contextmenu", (e) => {
+        const a = e.target.closest("[data-sfid]");
+        if (!a) return;
+        e.preventDefault();
+        renameSaved(a.dataset.sfid, a.dataset.sfname);
+      });
+    }
     box.innerHTML = html;
     box.hidden = !html || railClosed.has("Saved filters");
     if (head) head.style.display = html ? "" : "none";
@@ -568,6 +585,20 @@ async function renderSaved() {
   }
 }
 window.addEventListener("stash:playlists-changed", renderSaved);
+
+async function renameSaved(id, old) {
+  const { promptDialog, toast } = await import("./ui.js");
+  const name = await promptDialog({ title: t("Rename the saved filter"), label: t("Name"), value: old });
+  if (!name || !name.trim() || name.trim() === old) return;
+  try {
+    const { renameStashFilter } = await import("./stashfilters.js");
+    await renameStashFilter(id, name.trim());
+    toast(t("Renamed"), "ok");
+    renderSaved();
+  } catch (e) {
+    errorToast(e);
+  }
+}
 
 // The saved filter that is open is lit in the menu (matched by its sf / pl parameter and the list it opens)
 function markSaved(r) {

@@ -20,6 +20,17 @@ export function loadStashFilters(kind) {
 }
 export const forgetStashFilters = () => cache.clear();
 
+// Renames one of Stash's saved filters: the whole filter is read again and saved with the new name, nothing else in it changes
+export async function renameStashFilter(id, name) {
+  const d = await gql(`query($id: ID!) { findSavedFilter(id: $id) { id mode name find_filter { q page per_page sort direction } object_filter ui_options } }`, { id });
+  const f = d.findSavedFilter;
+  if (!f) throw new Error("This saved filter doesn't exist any more.");
+  await gql(`mutation($i: SaveFilterInput!) { saveFilter(input: $i) { id } }`, {
+    i: { id: f.id, mode: f.mode, name, find_filter: f.find_filter, object_filter: f.object_filter, ui_options: f.ui_options },
+  });
+  forgetStashFilters();
+}
+
 const ids = (list) => (Array.isArray(list) ? list : []).map((x) => String(x && typeof x === "object" ? x.id : x)).filter((x) => x && x !== "undefined");
 const NULLISH = new Set(["IS_NULL", "NOT_NULL"]);
 const BOOL = new Set(["organized", "interactive", "performer_favorite", "ignore_auto_tag", "favorite"]);

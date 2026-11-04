@@ -2717,4 +2717,6 @@ export default {
   "Natural": "Naturalny",
   "Deeper": "Niższy",
   "How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts.": "Dźwięk poniżej 1×. „Naturalny” rozciąga go i zachowuje wysokość (przy 0,25× może brzmieć metalicznie), „Niższy” obniża go jak spowolniona płyta – bez rozciągania, więc bez zniekształceń.",
+  "Rename the saved filter": "Zmień nazwę zapisanego filtru",
+  "Renamed": "Zmieniono nazwę",
 };

@@ -2719,4 +2719,6 @@ export default {
   "Natural": "自然",
   "Deeper": "低くする",
   "How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts.": "1× 未満の音の扱い。「自然」は音の高さを保ったまま引き延ばします（0.25× では金属的に聞こえることがあります）。「低くする」は遅くしたレコードのように音程が下がり、引き延ばさないのでノイズが出ません。",
+  "Rename the saved filter": "保存済みフィルターの名前を変更",
+  "Renamed": "名前を変更しました",
 };

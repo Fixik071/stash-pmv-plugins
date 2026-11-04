@@ -2712,4 +2712,6 @@ export default {
   "Natural": "Tự nhiên",
   "Deeper": "Trầm hơn",
   "How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts.": "Cách xử lý âm thanh dưới 1×. “Tự nhiên” kéo dài âm và giữ cao độ (có thể nghe như kim loại ở 0,25×), “Trầm hơn” để âm trầm xuống như đĩa quay chậm – không kéo dài nên không bị méo.",
+  "Rename the saved filter": "Đổi tên bộ lọc đã lưu",
+  "Renamed": "Đã đổi tên",
 };
