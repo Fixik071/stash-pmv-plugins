@@ -319,4 +319,7 @@ export default {
   "Showing all {0} results · ": "Показано всі: {0} · ",
   "Only matching": "лише відповідні",
   "Show": "показати",
+  "Sort: ": "Сортування: ",
+  "Seeders": "Сіди",
+  "Size": "Розмір",
 };

@@ -319,4 +319,7 @@ export default {
   "Showing all {0} results · ": "Показаны все: {0} · ",
   "Only matching": "только подходящие",
   "Show": "показать",
+  "Sort: ": "Сортировка: ",
+  "Seeders": "Сиды",
+  "Size": "Размер",
 };

@@ -4651,7 +4651,7 @@
 
   function renderSearchResults(section, result) {
     section.innerHTML = "";
-    var all = result.results || [];
+    var all = (result.results || []).slice();
     // Stash UI change: some trackers (PornXLab…) match any one word of the query, so "The Talk With Remido" brings
     // every release tagged "Dirty Talk". Results whose title lacks a word of the query are hidden, a link shows them.
     var words = searchWords(result.query);
@@ -4660,6 +4660,8 @@
       return words.every(function (w) { return have.indexOf(w) >= 0; });
     });
     var hidden = all.length - good.length;
+    sortSearchResults(all);
+    sortSearchResults(good);
     _searchResults = hidden ? good : all;
     _searchPage = 1;
 
@@ -4667,6 +4669,35 @@
     header.className = "ssd-search-header";
     header.textContent = tc("搜索结果 (", "Search Results (") + (result.count || 0) + ")";
     section.appendChild(header);
+
+    // Stash UI change: sort the list by seeders (default), size or date – the backend puts magnet results first,
+    // so a dead magnet stood above a release with 26 seeders
+    if (all.length > 1) {
+      var sortRow = document.createElement("div");
+      sortRow.className = "ssd-search-sort";
+      var sortLabel = document.createElement("span");
+      sortLabel.textContent = tc("排序：", "Sort: ");
+      sortRow.appendChild(sortLabel);
+      [["seeders", tc("做种", "Seeders")], ["size", tc("大小", "Size")], ["date", tc("日期", "Date")]].forEach(function (o) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "ssd-btn ssd-btn-sm " + (_searchSort === o[0] ? "ssd-btn-primary" : "ssd-btn-secondary");
+        b.textContent = o[1];
+        b.onclick = function () {
+          if (_searchSort === o[0]) return;
+          _searchSort = o[0];
+          sortRow.querySelectorAll("button").forEach(function (x) {
+            x.className = "ssd-btn ssd-btn-sm " + (x === b ? "ssd-btn-primary" : "ssd-btn-secondary");
+          });
+          sortSearchResults(all);
+          sortSearchResults(good);
+          _searchPage = 1;
+          renderSearchPage(section);
+        };
+        sortRow.appendChild(b);
+      });
+      section.appendChild(sortRow);
+    }
 
     // 后端只下发前 SEARCH_RESULT_LIMIT 条：抬头报总数、列表却更短时说清楚，
     // 否则就是"日志说 230 条，插件里只有几条"（论坛反馈）
@@ -4720,6 +4751,16 @@
     }
 
     renderSearchPage(section);
+  }
+
+  var _searchSort = "seeders";
+  function searchDate(r) { var t = Date.parse(r.pub_date || ""); return isNaN(t) ? 0 : t; }
+  // In place, so the lists the page and the "show" link point at stay the same arrays
+  function sortSearchResults(list) {
+    var key = _searchSort === "size" ? function (r) { return r.size || 0; }
+      : _searchSort === "date" ? searchDate
+      : function (r) { return r.seeders; };
+    list.sort(function (a, b) { return (key(b) - key(a)) || ((b.seeders) - (a.seeders)); });
   }
 
   // Lower-case words of a query or a release title ("OnlyTarts.26.06.04.Remido.The.Talk" → onlytarts, 26, …, remido, the, talk)

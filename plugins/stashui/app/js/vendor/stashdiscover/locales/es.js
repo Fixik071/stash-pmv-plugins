@@ -316,4 +316,7 @@ export default {
   "Showing all {0} results · ": "Mostrando los {0} resultados · ",
   "Only matching": "solo coincidentes",
   "Show": "mostrar",
+  "Sort: ": "Ordenar: ",
+  "Seeders": "Semillas",
+  "Size": "Tamaño",
 };

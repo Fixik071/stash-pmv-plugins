@@ -317,4 +317,7 @@ export default {
   "Showing all {0} results · ": "Pokazano wszystkie: {0} · ",
   "Only matching": "tylko pasujące",
   "Show": "pokaż",
+  "Sort: ": "Sortuj: ",
+  "Seeders": "Seedy",
+  "Size": "Rozmiar",
 };

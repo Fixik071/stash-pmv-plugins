@@ -1047,6 +1047,16 @@
   color: var(--ssd-modal-text);
   margin-bottom: 10px;
 }
+/* Stash UI: sort buttons above the resource search results */
+.ssd-search-sort {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--ssd-modal-muted);
+  margin: -4px 0 10px;
+}
 /* 结果被截断时的说明行（总数 vs 实际下发条数） */
 .ssd-search-truncated {
   font-size: 12px;

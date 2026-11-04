@@ -311,4 +311,7 @@ export default {
   "Showing all {0} results · ": "Alle {0} Ergebnisse angezeigt · ",
   "Only matching": "nur passende",
   "Show": "anzeigen",
+  "Sort: ": "Sortieren: ",
+  "Seeders": "Seeder",
+  "Size": "Größe",
 };

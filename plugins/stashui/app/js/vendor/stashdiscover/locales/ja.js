@@ -319,4 +319,7 @@ export default {
   "Showing all {0} results · ": "全 {0} 件を表示中 · ",
   "Only matching": "一致のみ",
   "Show": "表示",
+  "Sort: ": "並べ替え：",
+  "Seeders": "シーダー",
+  "Size": "サイズ",
 };

@@ -308,4 +308,8 @@ export default {
   "Showing all {0} results · ": "Les {0} résultats sont affichés · ",
   "Only matching": "seulement les correspondants",
   "Show": "afficher",
+  "Sort: ": "Trier : ",
+  "Seeders": "Sources",
+  "Size": "Taille",
+  "Date": "Date",
 };

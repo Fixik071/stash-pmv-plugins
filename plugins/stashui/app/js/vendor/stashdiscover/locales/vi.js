@@ -319,4 +319,7 @@ export default {
   "Showing all {0} results · ": "Đang hiện tất cả {0} kết quả · ",
   "Only matching": "chỉ kết quả khớp",
   "Show": "hiện",
+  "Sort: ": "Sắp xếp: ",
+  "Seeders": "Seeder",
+  "Size": "Kích thước",
 };
