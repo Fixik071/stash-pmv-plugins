@@ -2194,6 +2194,8 @@ def ssd_torznab(xml_text):
                 magnet = value
             elif name == "tracker":
                 tracker = value
+        if not tracker:  # Jackett names the source in its own tag: <jackettindexer id="1337x">1337x</jackettindexer>
+            tracker = (item.findtext("jackettindexer") or "").strip()
         if not magnet and link.startswith("magnet:"):
             magnet = link
         if not magnet and guid.startswith("magnet:"):
