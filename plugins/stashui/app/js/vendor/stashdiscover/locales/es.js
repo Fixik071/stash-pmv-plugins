@@ -312,4 +312,8 @@ export default {
   "{0} — the result may be incomplete": "{0} — el resultado puede estar incompleto",
   "{0}yo": "{0} años",
   "＋ Add to library": "＋ Añadir a la biblioteca",
+  "Hidden {0} results without every word of the query · ": "Ocultos {0} resultados sin todas las palabras de la búsqueda · ",
+  "Showing all {0} results · ": "Mostrando los {0} resultados · ",
+  "Only matching": "solo coincidentes",
+  "Show": "mostrar",
 };

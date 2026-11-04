@@ -307,4 +307,8 @@ export default {
   "{0} — the result may be incomplete": "{0} – das Ergebnis ist möglicherweise unvollständig",
   "{0}yo": "{0} J.",
   "＋ Add to library": "＋ Zur Bibliothek hinzufügen",
+  "Hidden {0} results without every word of the query · ": "{0} Ergebnisse ohne alle Suchwörter ausgeblendet · ",
+  "Showing all {0} results · ": "Alle {0} Ergebnisse angezeigt · ",
+  "Only matching": "nur passende",
+  "Show": "anzeigen",
 };

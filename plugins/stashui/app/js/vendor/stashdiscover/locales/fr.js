@@ -304,4 +304,8 @@ export default {
   "{0} — the result may be incomplete": "{0} — le résultat peut être incomplet",
   "{0}yo": "{0} ans",
   "＋ Add to library": "＋ Ajouter à la bibliothèque",
+  "Hidden {0} results without every word of the query · ": "{0} résultats sans tous les mots de la recherche masqués · ",
+  "Showing all {0} results · ": "Les {0} résultats sont affichés · ",
+  "Only matching": "seulement les correspondants",
+  "Show": "afficher",
 };

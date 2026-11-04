@@ -315,4 +315,8 @@ export default {
   "{0} — the result may be incomplete": "{0} — 結果が不完全な可能性があります",
   "{0}yo": "{0} 歳",
   "＋ Add to library": "＋ ライブラリに追加",
+  "Hidden {0} results without every word of the query · ": "検索語をすべて含まない結果 {0} 件を非表示 · ",
+  "Showing all {0} results · ": "全 {0} 件を表示中 · ",
+  "Only matching": "一致のみ",
+  "Show": "表示",
 };

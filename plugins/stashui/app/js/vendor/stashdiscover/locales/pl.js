@@ -313,4 +313,8 @@ export default {
   "{0} — the result may be incomplete": "{0} — wynik może być niepełny",
   "{0}yo": "{0} l.",
   "＋ Add to library": "＋ Dodaj do biblioteki",
+  "Hidden {0} results without every word of the query · ": "Ukryto wyniki bez wszystkich słów zapytania: {0} · ",
+  "Showing all {0} results · ": "Pokazano wszystkie: {0} · ",
+  "Only matching": "tylko pasujące",
+  "Show": "pokaż",
 };

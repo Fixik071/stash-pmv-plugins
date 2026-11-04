@@ -315,4 +315,8 @@ export default {
   "{0} — the result may be incomplete": "{0} — kết quả có thể chưa đầy đủ",
   "{0}yo": "{0} tuổi",
   "＋ Add to library": "＋ Thêm vào thư viện",
+  "Hidden {0} results without every word of the query · ": "Đã ẩn {0} kết quả không chứa đủ các từ tìm kiếm · ",
+  "Showing all {0} results · ": "Đang hiện tất cả {0} kết quả · ",
+  "Only matching": "chỉ kết quả khớp",
+  "Show": "hiện",
 };

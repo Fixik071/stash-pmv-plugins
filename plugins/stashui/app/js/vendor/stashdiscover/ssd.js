@@ -4651,7 +4651,16 @@
 
   function renderSearchResults(section, result) {
     section.innerHTML = "";
-    _searchResults = result.results || [];
+    var all = result.results || [];
+    // Stash UI change: some trackers (PornXLab…) match any one word of the query, so "The Talk With Remido" brings
+    // every release tagged "Dirty Talk". Results whose title lacks a word of the query are hidden, a link shows them.
+    var words = searchWords(result.query);
+    var good = all.filter(function (r) {
+      var have = searchWords(r.title);
+      return words.every(function (w) { return have.indexOf(w) >= 0; });
+    });
+    var hidden = all.length - good.length;
+    _searchResults = hidden ? good : all;
     _searchPage = 1;
 
     var header = document.createElement("div");
@@ -4672,15 +4681,50 @@
       section.appendChild(hint);
     }
 
-    if (_searchResults.length === 0) {
+    if (hidden) {
+      var showAll = false;
+      var filt = document.createElement("div");
+      filt.className = "ssd-search-truncated";
+      var filtText = document.createElement("span");
+      var filtBtn = document.createElement("a");
+      filtBtn.href = "#";
+      filtBtn.className = "ssd-search-filter-toggle";
+      var paintFilter = function () {
+        filtText.textContent = showAll
+          ? tc("显示全部 " + all.length + " 条 · ", "Showing all " + all.length + " results · ")
+          : tc("已隐藏 " + hidden + " 条标题不含全部搜索词的结果 · ", "Hidden " + hidden + " results without every word of the query · ");
+        filtBtn.textContent = showAll ? tc("只看匹配的", "Only matching") : tc("显示", "Show");
+      };
+      filtBtn.onclick = function (e) {
+        e.preventDefault();
+        showAll = !showAll;
+        _searchResults = showAll ? all : good;
+        _searchPage = 1;
+        paintFilter();
+        var none = section.querySelector(".ssd-search-empty");
+        if (none) none.style.display = _searchResults.length ? "none" : "";
+        renderSearchPage(section);
+      };
+      paintFilter();
+      filt.appendChild(filtText);
+      filt.appendChild(filtBtn);
+      section.appendChild(filt);
+    }
+
+    if (all.length === 0 || (hidden && good.length === 0)) {
       var empty = document.createElement("div");
       empty.className = "ssd-search-empty";
       empty.textContent = tc("未找到资源", "No resources found");
       section.appendChild(empty);
-      return;
+      if (all.length === 0) return;
     }
 
     renderSearchPage(section);
+  }
+
+  // Lower-case words of a query or a release title ("OnlyTarts.26.06.04.Remido.The.Talk" → onlytarts, 26, …, remido, the, talk)
+  function searchWords(text) {
+    return String(text || "").toLowerCase().match(/[\p{L}\p{N}]+/gu) || [];
   }
 
   function renderSearchPage(section) {
