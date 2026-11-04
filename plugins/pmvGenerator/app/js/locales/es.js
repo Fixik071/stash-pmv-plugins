@@ -2697,4 +2697,10 @@ export default {
   "How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts.": "El sonido por debajo de 1×. «Natural» lo estira y mantiene el tono (puede sonar metálico a 0,25×); «Más grave» lo deja bajar como un disco más lento: sin estirar, sin artefactos.",
   "Rename the saved filter": "Renombrar el filtro guardado",
   "Renamed": "Renombrado",
+  "Remove the default": "Quitar el valor predeterminado",
+  "This tag filter opens with the page every time – click to switch it off": "Este filtro de etiquetas se aplica cada vez que se abre la página; haz clic para quitarlo",
+  "Open this page with this tag filter every time": "Abrir esta página siempre con este filtro de etiquetas",
+  "The saved default tag filter is switched off": "Quita el filtro de etiquetas predeterminado guardado",
+  "Saved as the default tag filter": "Guardado como filtro de etiquetas predeterminado",
+  "Default tag filter removed": "Filtro de etiquetas predeterminado quitado",
 };

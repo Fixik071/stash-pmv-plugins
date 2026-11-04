@@ -7,6 +7,13 @@
 
 export const CHANGES = [
   {
+    v: "3.140.2",
+    date: "2026-11-04",
+    items: [
+      ["ui", "Performers: the tag filter can be made the default. Pick the tags (Tags button), press “Make default” in that panel, and the Performers page opens with them every time – unless the address says otherwise (a tag's own page, or a bookmarked filter). Press it again, or clear the tags and press “Remove the default”, to switch it off. Asked for in GitHub issue #22.", "演员：标签筛选现在可以设为默认。选好标签（“标签”按钮），在该面板中点“设为默认”，以后每次打开演员页面都会自动带上这些标签——除非地址里另有说明（某个标签自己的页面，或收藏的筛选链接）。再点一次，或清空标签后点“移除默认设置”即可关闭。来自 GitHub issue #22 的需求。", "performers::[data-tagbtn]"],
+    ],
+  },
+  {
     v: "3.140.1",
     date: "2026-11-04",
     items: [

@@ -2,7 +2,7 @@
 
 import { getDef, defButton } from "../defsort.js";
 import { perfInfo } from "../display.js";
-import { esc, icon, debounce, errorToast, toast, plural, promptDialog, confirmDialog, starsHtml, pop, burst } from "../ui.js";
+import { esc, icon, debounce, errorToast, toast, plural, promptDialog, confirmDialog, starsHtml, pop, burst, store } from "../ui.js";
 import { t, locale } from "../i18n.js";
 import { findPerformers, updatePerformer, createPerformer, destroyPerformers, gql, routeSignal } from "../api.js";
 import { go, setQuery } from "../main.js";
@@ -162,6 +162,7 @@ export async function render(main, params, query) {
     <div class="kb-perf-attrs kb-perf-tagp" data-tagpanel hidden>
       <div class="kb-tagpick kb-perf-tagbox" data-tagbox></div>
       <span class="kb-seg" data-tagmode><button type="button" data-m="all">${t("Match all tags")}</button><button type="button" data-m="any">${t("Match any tag")}</button></span>
+      <button type="button" class="kb-btn is-ghost kb-defsort" data-tagdef></button>
     </div>
     <div class="kb-perf-attrs" data-attrs hidden></div>
     <div class="kb-perfgrid" data-list><div class="kb-loading">${t("Loading …")}</div></div>
@@ -225,7 +226,14 @@ export async function render(main, params, query) {
   };
   if (looksOn()) showLooks(true);
   // Tags: the performer's own tags – several at once, right-click a chip = leave out, all of them or any of them
+  // (the tag filter that was made the default opens with the page, unless the address says something about tags itself – and not on a tag's own page)
+  const defTags = () => {
+    const d = store.get("defPerfTags", null);
+    return d && Array.isArray(d.inc) && Array.isArray(d.exc) && d.inc.length + d.exc.length ? d : null;
+  };
+  const fromAddress = query.ptags || query.ptagsx || query.ptany != null || query.tag || query.scenetag;
   let ptags = { inc: (query.ptags || "").split(",").filter(Boolean), exc: (query.ptagsx || "").split(",").filter(Boolean), any: query.ptany === "1" };
+  if (!fromAddress && defTags()) ptags = { inc: [...defTags().inc], exc: [...defTags().exc], any: !!defTags().any };
   const tagsOn = () => ptags.inc.length > 0 || ptags.exc.length > 0;
   let tagPick = null;
   const paintTagMode = () => $("[data-tagmode]").querySelectorAll("[data-m]").forEach((b) => b.classList.toggle("is-on", (b.dataset.m === "any") === ptags.any));
@@ -243,11 +251,32 @@ export async function render(main, params, query) {
           ptags.inc = inc;
           ptags.exc = exc;
           $("[data-tagbtn]").classList.toggle("is-on", tagsOn() || !$("[data-tagpanel]").hidden);
+          paintTagDef();
           reload();
         },
       });
     }
     paintTagMode();
+    paintTagDef();
+  };
+  // "Make default" for the tag filter, like the one of the sort order
+  const sameTags = (d) => !!d && d.any === ptags.any && d.inc.join(",") === ptags.inc.join(",") && d.exc.join(",") === ptags.exc.join(",");
+  function paintTagDef() {
+    const b = $("[data-tagdef]");
+    const d = defTags();
+    const on = !!d && tagsOn() && sameTags(d);
+    b.classList.toggle("is-on", on);
+    b.disabled = !tagsOn() && !d;
+    b.textContent = on ? "✓ " + t("Default") : tagsOn() || !d ? t("Make default") : t("Remove the default");
+    b.title = on ? t("This tag filter opens with the page every time – click to switch it off") : tagsOn() ? t("Open this page with this tag filter every time") : t("The saved default tag filter is switched off");
+  }
+  $("[data-tagdef]").onclick = () => {
+    const d = defTags();
+    const off = !tagsOn() || (!!d && sameTags(d));
+    if (off) store.set("defPerfTags", null);
+    else store.set("defPerfTags", { inc: [...ptags.inc], exc: [...ptags.exc], any: ptags.any });
+    paintTagDef();
+    toast(off ? t("Default tag filter removed") : t("Saved as the default tag filter"), "ok");
   };
   if (tagsOn()) showTags(true);
   let tiers = (query.tier || "").split(",").filter(Boolean);
@@ -405,6 +434,7 @@ export async function render(main, params, query) {
     if (!b) return;
     ptags.any = b.dataset.m === "any";
     paintTagMode();
+    paintTagDef();
     if (tagsOn()) reload();
   });
   // A word typed in the search that is a value of a performer's own field ("blue", "blonde", "latina" …): offered as a filter –

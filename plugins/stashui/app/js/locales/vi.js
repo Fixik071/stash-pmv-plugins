@@ -2714,4 +2714,10 @@ export default {
   "How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts.": "Cách xử lý âm thanh dưới 1×. “Tự nhiên” kéo dài âm và giữ cao độ (có thể nghe như kim loại ở 0,25×), “Trầm hơn” để âm trầm xuống như đĩa quay chậm – không kéo dài nên không bị méo.",
   "Rename the saved filter": "Đổi tên bộ lọc đã lưu",
   "Renamed": "Đã đổi tên",
+  "Remove the default": "Bỏ mặc định",
+  "This tag filter opens with the page every time – click to switch it off": "Bộ lọc thẻ này được áp dụng mỗi khi mở trang – nhấp để tắt",
+  "Open this page with this tag filter every time": "Luôn mở trang này với bộ lọc thẻ này",
+  "The saved default tag filter is switched off": "Tắt bộ lọc thẻ mặc định đã lưu",
+  "Saved as the default tag filter": "Đã lưu làm bộ lọc thẻ mặc định",
+  "Default tag filter removed": "Đã bỏ bộ lọc thẻ mặc định",
 };

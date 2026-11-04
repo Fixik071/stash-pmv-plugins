@@ -2756,4 +2756,10 @@ export default {
   "How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts.": "Как звучит звук ниже 1×. «Естественный» растягивает его и сохраняет высоту (при 0,25× может звучать металлически), «Ниже» понижает его, как замедленную пластинку, — без растяжения, а значит без артефактов.",
   "Rename the saved filter": "Переименовать сохранённый фильтр",
   "Renamed": "Переименовано",
+  "Remove the default": "Убрать по умолчанию",
+  "This tag filter opens with the page every time – click to switch it off": "Этот фильтр по тегам применяется при каждом открытии страницы – нажмите, чтобы отключить",
+  "Open this page with this tag filter every time": "Всегда открывать эту страницу с этим фильтром по тегам",
+  "The saved default tag filter is switched off": "Отключает сохранённый фильтр по тегам по умолчанию",
+  "Saved as the default tag filter": "Сохранено как фильтр по тегам по умолчанию",
+  "Default tag filter removed": "Фильтр по тегам по умолчанию убран",
 };

@@ -2778,4 +2778,10 @@ export default {
   "How the sound goes below 1×. “Natural” stretches it and keeps the pitch (can sound metallic at 0.25×), “Deeper” lets it sink like a slowed record – no stretching, so no artefacts.": "低于 1× 时声音如何处理。“自然”会拉长声音并保持音高（0.25× 时可能带金属感），“更低沉”像放慢的唱片一样让音高下降——不拉伸，所以没有杂音。",
   "Rename the saved filter": "重命名已保存的筛选器",
   "Renamed": "已重命名",
+  "Remove the default": "移除默认设置",
+  "This tag filter opens with the page every time – click to switch it off": "此标签筛选会在每次打开页面时启用——点击可关闭",
+  "Open this page with this tag filter every time": "每次都用这个标签筛选打开此页面",
+  "The saved default tag filter is switched off": "点击可删除已保存的默认标签筛选",
+  "Saved as the default tag filter": "已保存为默认标签筛选",
+  "Default tag filter removed": "已移除默认标签筛选",
 };
