@@ -315,4 +315,8 @@ export default {
   "{0} — the result may be incomplete": "{0} — результат може бути неповним",
   "{0}yo": "{0} р.",
   "＋ Add to library": "＋ Додати до бібліотеки",
+  "Hidden {0} results without every word of the query · ": "Приховано без усіх слів запиту: {0} · ",
+  "Showing all {0} results · ": "Показано всі: {0} · ",
+  "Only matching": "лише відповідні",
+  "Show": "показати",
 };

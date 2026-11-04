@@ -315,4 +315,8 @@ export default {
   "{0} — the result may be incomplete": "{0} — результат может быть неполным",
   "{0}yo": "{0} л.",
   "＋ Add to library": "＋ Добавить в библиотеку",
+  "Hidden {0} results without every word of the query · ": "Скрыто без всех слов запроса: {0} · ",
+  "Showing all {0} results · ": "Показаны все: {0} · ",
+  "Only matching": "только подходящие",
+  "Show": "показать",
 };
