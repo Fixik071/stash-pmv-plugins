@@ -2760,4 +2760,7 @@ export default {
   "The saved default tag filter is switched off": "Вимикає збережений фільтр за тегами за замовчуванням",
   "Saved as the default tag filter": "Збережено як фільтр за тегами за замовчуванням",
   "Default tag filter removed": "Фільтр за тегами за замовчуванням прибрано",
+  "This file has no phash yet – StashDB can't find or check it by its picture. Make one now (a task, a few seconds to a minute).": "У цього файлу ще немає phash – StashDB не зможе знайти чи перевірити його за зображенням. Зробити зараз (завдання, від кількох секунд до хвилини).",
+  "Generate pHash": "Зробити pHash",
+  "Making the pHash – see Tasks. It's used once the task is done.": "pHash створюється – див. Завдання. Його буде використано, коли завдання завершиться.",
 };

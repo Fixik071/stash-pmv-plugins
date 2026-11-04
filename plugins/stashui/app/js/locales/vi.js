@@ -2720,4 +2720,7 @@ export default {
   "The saved default tag filter is switched off": "Tắt bộ lọc thẻ mặc định đã lưu",
   "Saved as the default tag filter": "Đã lưu làm bộ lọc thẻ mặc định",
   "Default tag filter removed": "Đã bỏ bộ lọc thẻ mặc định",
+  "This file has no phash yet – StashDB can't find or check it by its picture. Make one now (a task, a few seconds to a minute).": "Tệp này chưa có phash – StashDB không thể tìm hay kiểm tra nó theo hình ảnh. Tạo ngay (một tác vụ, vài giây đến một phút).",
+  "Generate pHash": "Tạo pHash",
+  "Making the pHash – see Tasks. It's used once the task is done.": "Đang tạo pHash – xem Tác vụ. Nó được dùng khi tác vụ xong.",
 };

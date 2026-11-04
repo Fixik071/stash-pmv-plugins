@@ -2727,4 +2727,7 @@ export default {
   "The saved default tag filter is switched off": "保存済みのデフォルトのタグフィルターを解除します",
   "Saved as the default tag filter": "デフォルトのタグフィルターとして保存しました",
   "Default tag filter removed": "デフォルトのタグフィルターを解除しました",
+  "This file has no phash yet – StashDB can't find or check it by its picture. Make one now (a task, a few seconds to a minute).": "このファイルにはまだ phash がありません – StashDB は画像で検索・確認できません。今すぐ作成します（タスク、数秒〜1分）。",
+  "Generate pHash": "pHash を作成",
+  "Making the pHash – see Tasks. It's used once the task is done.": "pHash を作成中 – タスクを参照してください。タスク完了後に使われます。",
 };

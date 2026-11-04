@@ -2703,4 +2703,7 @@ export default {
   "The saved default tag filter is switched off": "Quita el filtro de etiquetas predeterminado guardado",
   "Saved as the default tag filter": "Guardado como filtro de etiquetas predeterminado",
   "Default tag filter removed": "Filtro de etiquetas predeterminado quitado",
+  "This file has no phash yet – StashDB can't find or check it by its picture. Make one now (a task, a few seconds to a minute).": "Este archivo aún no tiene phash: StashDB no puede encontrarlo ni comprobarlo por su imagen. Crearlo ahora (una tarea, de segundos a un minuto).",
+  "Generate pHash": "Crear pHash",
+  "Making the pHash – see Tasks. It's used once the task is done.": "Creando el pHash: mira Tareas. Se usa cuando la tarea termina.",
 };

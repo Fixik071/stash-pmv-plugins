@@ -2,7 +2,8 @@
 
 import { esc, icon, confirmDialog, fmtDuration, fmtRes, fmtBytes, fmtDate, fmtAgo, invNo, starsHtml, ratingClick, ratingFromInput, ratingToast, toast, errorToast, store, plural, burst, pop } from "../ui.js";
 import { t } from "../i18n.js";
-import { updateItem, setFavorite, favoriteTagId, addO, removeO } from "../api.js";
+import { updateItem, setFavorite, favoriteTagId, addO, removeO, gql } from "../api.js";
+import { pokeJobs } from "../jobs.js";
 import { app, setQueueCount } from "../main.js";
 import { openEditor } from "./edit.js";
 import { perfPicker } from "./perfpicker.js";
@@ -76,6 +77,22 @@ async function revealFile(path) {
   }
 }
 
+// The scene page asks for the files' fingerprints (a list doesn't): no phash in them = the button to make one.
+const needsPhash = (x) => (x.files || []).some((f) => Array.isArray(f.fingerprints) && !f.fingerprints.some((p) => p.type === "phash"));
+
+async function generatePhash(id, btn) {
+  btn.disabled = true;
+  try {
+    await gql(`mutation GenPhash($i: GenerateMetadataInput!) { metadataGenerate(input: $i) }`, { i: { phashes: true, sceneIDs: [String(id)] } });
+    pokeJobs();
+    toast(t("Making the pHash – see Tasks. It's used once the task is done."), "ok");
+    btn.hidden = true;
+  } catch (err) {
+    btn.disabled = false;
+    errorToast(err, "Generate pHash");
+  }
+}
+
 export function placardHtml(kind, x) {
   const fav = !!app.favId && x.tags.some((tg) => tg.id === app.favId);
   const info = fileInfo(kind, x);
@@ -122,6 +139,7 @@ export function placardHtml(kind, x) {
         ${kind === "scene" ? `<button class="kb-plc-btn" data-vedit title="${t("Shorten this video or crop its picture – the file is replaced by the result")}">${icon("crop")}${t("Crop / edit")}</button>` : ""}
         ${kind === "scene" ? `<button class="kb-plc-btn" data-gif title="${t("Make an animated GIF of a part of this video")}">${icon("film")}${t("GIF")}</button>` : ""}
         ${kind === "scene" ? `<button class="kb-plc-btn" data-wlink title="${t("Make a public link to this video that anybody can open in a web browser")}">${icon("share")}${t("Watch link")}</button>` : ""}
+        ${kind === "scene" && needsPhash(x) ? `<button class="kb-plc-btn" data-phash title="${t("This file has no phash yet – StashDB can't find or check it by its picture. Make one now (a task, a few seconds to a minute).")}">${icon("bolt")}${t("Generate pHash")}</button>` : ""}
         ${kind === "scene" && app.pmvPlugin !== null ? `<button class="kb-plc-btn" data-music title="${t("Use the music in the PMV Generator, or save it as a sound file")}">${icon("music")}${t("Music")}</button>` : ""}
       </div>
       ${info.path ? `<p class="kb-plc-path">${esc(info.path)}</p>` : ""}
@@ -337,6 +355,8 @@ export function bindPlacard(host, kind, getItem, { refresh, onDeleted, goFolder,
       if (e.target.closest("[data-gif]")) return gif && gif();
       if (e.target.closest("[data-vedit]")) return vedit && vedit();
       if (e.target.closest("[data-wlink]")) return wlink && wlink();
+      const ph = e.target.closest("[data-phash]");
+      if (ph) return void generatePhash(x.id, ph);
       if (e.target.closest("[data-music]")) return music && music();
       if (e.target.closest("[data-cover]")) return cover && cover();
       if (e.target.closest("[data-funscript]")) return funscript && funscript();
