@@ -2784,4 +2784,5 @@ export default {
   "The saved default tag filter is switched off": "点击可删除已保存的默认标签筛选",
   "Saved as the default tag filter": "已保存为默认标签筛选",
   "Default tag filter removed": "已移除默认标签筛选",
+  "Nothing by the file hash – these are found by the title “{q}”. Check that it is the same scene.": "按文件哈希未找到 – 以下是按标题“{q}”找到的结果，请确认是同一场景。",
 };

@@ -2681,4 +2681,5 @@ export default {
   "The saved default tag filter is switched off": "Schaltet den gespeicherten Standard-Tag-Filter aus",
   "Saved as the default tag filter": "Als Standard-Tag-Filter gespeichert",
   "Default tag filter removed": "Standard-Tag-Filter entfernt",
+  "Nothing by the file hash – these are found by the title “{q}”. Check that it is the same scene.": "Nichts über den Datei-Hash – diese wurden über den Titel „{q}“ gefunden. Prüfe, ob es dieselbe Szene ist.",
 };

@@ -2727,4 +2727,5 @@ export default {
   "The saved default tag filter is switched off": "保存済みのデフォルトのタグフィルターを解除します",
   "Saved as the default tag filter": "デフォルトのタグフィルターとして保存しました",
   "Default tag filter removed": "デフォルトのタグフィルターを解除しました",
+  "Nothing by the file hash – these are found by the title “{q}”. Check that it is the same scene.": "ファイルのハッシュでは見つかりませんでした – タイトル「{q}」で見つかった結果です。同じシーンか確認してください。",
 };

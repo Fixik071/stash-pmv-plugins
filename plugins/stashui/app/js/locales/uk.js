@@ -2760,4 +2760,5 @@ export default {
   "The saved default tag filter is switched off": "Вимикає збережений фільтр за тегами за замовчуванням",
   "Saved as the default tag filter": "Збережено як фільтр за тегами за замовчуванням",
   "Default tag filter removed": "Фільтр за тегами за замовчуванням прибрано",
+  "Nothing by the file hash – these are found by the title “{q}”. Check that it is the same scene.": "За хешем файлу нічого немає – це знайдено за назвою «{q}». Перевірте, що це та сама сцена.",
 };

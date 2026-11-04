@@ -2720,4 +2720,5 @@ export default {
   "The saved default tag filter is switched off": "Tắt bộ lọc thẻ mặc định đã lưu",
   "Saved as the default tag filter": "Đã lưu làm bộ lọc thẻ mặc định",
   "Default tag filter removed": "Đã bỏ bộ lọc thẻ mặc định",
+  "Nothing by the file hash – these are found by the title “{q}”. Check that it is the same scene.": "Không tìm thấy theo hash của tệp – đây là kết quả theo tiêu đề “{q}”. Hãy kiểm tra xem có đúng cảnh đó không.",
 };

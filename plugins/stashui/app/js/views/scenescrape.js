@@ -52,6 +52,23 @@ export function scrapedFields(sch) {
 }
 
 // host: the section to fill. ctx: { id, title, el (the drawer), picker (tags), perfs, studio, setCover(dataUrl), setStashIds(list), stashIds }
+// A title that is still the file name ("SlipperyMassage - Masseuse Gets … Asked.mp4", "Some.Scene.1080p.mp4") finds nothing
+// on StashDB: the box searches all words, and ".mp4" or the studio in front don't stand in its title. The search box starts
+// with the cleaned name instead – you can still type anything.
+export function searchTitle(title) {
+  let s = String(title || "").trim();
+  if (!s) return "";
+  s = s.replace(/\.(mp4|m4v|mkv|avi|wmv|mov|webm|flv|mpe?g|ts)$/i, "");
+  if (!/\s/.test(s)) s = s.replace(/[._]+/g, " "); // dots or underscores instead of spaces
+  s = s.replace(/\[[^\]]*\]|\{[^}]*\}/g, " "); // [tags] {studio}
+  s = s.replace(/\b(2160|1080|720|480|360)p\b|\b(4k|uhd|fhd|hd|xxx|mp4|hevc|x26[45]|h\.?26[45])\b/gi, " ");
+  s = s.replace(/\s-[A-Za-z0-9]+\s*$/, ""); // release group left from "…MP4-TRB"
+  const head = /^([^\s-]+)\s+-\s+(.+)$/.exec(s.trim()); // "Studio - Title": a one-word front part is the studio
+  if (head) s = head[2];
+  s = s.replace(/\s+/g, " ").replace(/^[\s\-–]+|[\s\-–]+$/g, "");
+  return s || String(title).trim();
+}
+
 export async function mountSceneScrape(host, ctx) {
   let sch, sources;
   try {
@@ -69,7 +86,7 @@ export async function mountSceneScrape(host, ctx) {
     <b>${t("Fill in from the internet")}</b>
     <div class="kb-pe-scrapebar">
       ${sources.list.length ? `<select class="kb-field" data-src>${sources.list.map((s) => `<option value="${esc(s.id)}">${esc(sourceLabel(s))}</option>`).join("")}</select>` : ""}
-      <input class="kb-field" data-sq value="${esc(ctx.title || "")}" placeholder="${esc(t("Title or link – empty = look the file up"))}">
+      <input class="kb-field" data-sq value="${esc(searchTitle(ctx.title))}" placeholder="${esc(t("Title or link – empty = look the file up"))}">
       <button type="button" class="kb-btn is-primary" data-sgo>${icon("search")}${t("Search")}</button>
     </div>
     <label class="kb-check" data-hashrow title="${esc(t("Ask the source for the scene by its file fingerprints, not by its title"))}"><input type="checkbox" data-hash${store.get("sceneScrapeHash", false) ? " checked" : ""}> ${t("Look up by file hash (oshash / phash / md5)")}</label>
@@ -113,11 +130,18 @@ export async function mountSceneScrape(host, ctx) {
       // a name asks by text, an empty search by the scene itself (its fingerprints / what Stash knows about it)
       if (q && !canByName(s)) throw new Error(t("This source can't search by name – it only looks up the file. Leave the search empty, or choose another source."));
       if (!q && !canByFile(s)) throw new Error(t("This source can't look up a file – type a title or choose another source."));
-      const input = q ? { query: q } : { scene_id: ctx.id };
-      const r = await gql(`query($s: ScraperSourceInput!, $i: ScrapeSingleSceneInput!) { scrapeSingleScene(source: $s, input: $i) { ${SF} } }`, { s: sourceInput(s), i: input });
-      results = r.scrapeSingleScene || [];
+      const ask = async (input) =>
+        (await gql(`query($s: ScraperSourceInput!, $i: ScrapeSingleSceneInput!) { scrapeSingleScene(source: $s, input: $i) { ${SF} } }`, { s: sourceInput(s), i: input })).scrapeSingleScene || [];
+      results = await ask(q ? { query: q } : { scene_id: ctx.id });
+      // Nothing by the file's hash (another cut, a re-encode, a 4K copy the box has no fingerprint of): ask by the title too
+      let note = "";
+      const name = $("[data-sq]").value.trim();
+      if (!results.length && !q && name && !/^https?:\/\//i.test(name) && canByName(s)) {
+        results = await ask({ query: name });
+        if (results.length) note = `<p class="kb-hint">${esc(t("Nothing by the file hash – these are found by the title “{q}”. Check that it is the same scene.", { q: name }))}</p>`;
+      }
       out.innerHTML = results.length
-        ? results
+        ? note + results
             .slice(0, 25)
             .map((x, i) => {
               const sub = [(x.studio || {}).name, day(x.date), (x.performers || []).map((p) => p.name).slice(0, 3).join(", ")].filter(Boolean).join(" · ");
