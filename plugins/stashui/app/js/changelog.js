@@ -7,6 +7,13 @@
 
 export const CHANGES = [
   {
+    v: "3.139.1",
+    date: "2026-11-04",
+    items: [
+      ["ui", "Discover → scene window → “Search Resources”: each result now says which tracker it comes from (e.g. “1.4 GB · S: 11 · L: 11 · 1337x”), and results whose title lacks a word of your search are hidden – some trackers match any single word. A line under the header says how many were hidden, with a link to show them. Thanks to Fixik071 (pull requests #31 and #32). After updating, use “Reload plugins” in Stash.", "Discover → 场景窗口 → “搜索资源”：每条结果现在会显示来自哪个 Tracker（例如“1.4 GB · S: 11 · L: 11 · 1337x”），标题中缺少搜索词的结果会被隐藏——有些 Tracker 只要匹配任意一个词就会返回。标题下方的一行会说明隐藏了多少条，并提供显示它们的链接。感谢 Fixik071（Pull Request #31 和 #32）。更新后请在 Stash 中点击“Reload plugins”。"],
+    ],
+  },
+  {
     v: "3.139.0",
     date: "2026-11-03",
     items: [
