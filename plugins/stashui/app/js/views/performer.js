@@ -81,6 +81,7 @@ export async function render(main, params, query) {
           ${p.o_counter ? `<span class="kb-plc-btn is-static" title="${t("O counter")}">${icon("drop")}${p.o_counter}</span>` : ""}
           <button class="kb-plc-btn" data-edit>${icon("edit")}${t("Edit")}</button>
           <button class="kb-plc-btn" data-addmedia title="${t("Link scenes, images and galleries to this performer")}">${icon("plus")}${t("Add scenes and images")}</button>
+          <button class="kb-plc-btn" data-draft title="${t("Send this performer to StashDB as a draft – you check and submit it on the site")}">${icon("plus")}${t("To StashDB")}</button>
           <button class="kb-plc-btn" data-pstats title="${t("What the library holds of this performer: scenes per year, watch time, rating, tags …")}">${icon("chart")}${t("Statistics")}</button>
           <button class="kb-plc-btn" data-pmiss title="${t("Scenes this performer has on StashDB (or another stash-box) that the library doesn't have")}">${icon("search")}${t("Missing scenes")}</button>
         </div>
@@ -234,6 +235,7 @@ export async function render(main, params, query) {
   const edit = (scrape) => openPerformerEditor(p.id, { scrape, onSaved: () => go("performer/" + p.id, true), onDeleted: () => go("performers", true) });
   main.querySelector("[data-edit]").onclick = () => edit(false);
   main.querySelector("[data-photo]").onclick = () => edit(false);
+  main.querySelector("[data-draft]").onclick = async (e) => (await import("./boxdraft.js")).sendDraft("performer", p.id, e.currentTarget);
   main.querySelector("[data-addmedia]").onclick = async () => {
     const { openAddMedia } = await import("./perfadd.js");
     openAddMedia({ id: p.id, name: p.name }, () => go("performer/" + p.id, true));

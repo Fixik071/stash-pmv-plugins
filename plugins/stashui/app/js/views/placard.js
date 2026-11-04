@@ -122,6 +122,7 @@ export function placardHtml(kind, x) {
         ${kind === "scene" ? `<button class="kb-plc-btn" data-vedit title="${t("Shorten this video or crop its picture – the file is replaced by the result")}">${icon("crop")}${t("Crop / edit")}</button>` : ""}
         ${kind === "scene" ? `<button class="kb-plc-btn" data-gif title="${t("Make an animated GIF of a part of this video")}">${icon("film")}${t("GIF")}</button>` : ""}
         ${kind === "scene" ? `<button class="kb-plc-btn" data-wlink title="${t("Make a public link to this video that anybody can open in a web browser")}">${icon("share")}${t("Watch link")}</button>` : ""}
+        ${kind === "scene" ? `<button class="kb-plc-btn" data-draft title="${t("Send this scene to StashDB as a draft – you check and submit it on the site")}">${icon("plus")}${t("To StashDB")}</button>` : ""}
         ${kind === "scene" && app.pmvPlugin !== null ? `<button class="kb-plc-btn" data-music title="${t("Use the music in the PMV Generator, or save it as a sound file")}">${icon("music")}${t("Music")}</button>` : ""}
       </div>
       ${info.path ? `<p class="kb-plc-path">${esc(info.path)}</p>` : ""}
@@ -337,6 +338,7 @@ export function bindPlacard(host, kind, getItem, { refresh, onDeleted, goFolder,
       if (e.target.closest("[data-gif]")) return gif && gif();
       if (e.target.closest("[data-vedit]")) return vedit && vedit();
       if (e.target.closest("[data-wlink]")) return wlink && wlink();
+      if (e.target.closest("[data-draft]")) return void (await import("./boxdraft.js")).sendDraft("scene", x.id, e.target.closest("[data-draft]"));
       if (e.target.closest("[data-music]")) return music && music();
       if (e.target.closest("[data-cover]")) return cover && cover();
       if (e.target.closest("[data-funscript]")) return funscript && funscript();
